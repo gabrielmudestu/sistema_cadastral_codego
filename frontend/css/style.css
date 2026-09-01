@@ -278,6 +278,60 @@ input:focus-visible {
 
 /* Responsive */
 
+/* Feedback (sucesso / erro do envio) */
+
+.feedback {
+  margin-top: 24px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.feedback--success {
+  background: #eaf3ec;
+  border: 1px solid var(--primary);
+  color: var(--primary-dark);
+}
+
+.feedback--error {
+  background: #f7eceb;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.feedback__title {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.feedback__protocolo {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 0 12px;
+}
+
+.feedback__link {
+  display: inline-block;
+  color: var(--surface);
+  background: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+}
+
+.feedback__link:hover {
+  background: var(--primary-dark);
+}
+
+.btn-primary[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 560px) {
   .field-row {
     grid-template-columns: 1fr;

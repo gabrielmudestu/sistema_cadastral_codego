@@ -1,4 +1,9 @@
+// URL base da API. Em produção, ajustar para o domínio real do backend.
+const API_BASE_URL = window.CODEGO_API_BASE_URL || 'http://localhost:8000';
+
 const form = document.getElementById('form-cadastro');
+const submitButton = document.getElementById('btn-submit');
+const feedbackEl = document.getElementById('feedback');
 const nomeInput = document.getElementById('nome');
 const documentoInput = document.getElementById('documento');
 const emailInput = document.getElementById('email');
@@ -126,8 +131,37 @@ function validateForm() {
   return valid;
 }
 
-form.addEventListener('submit', (event) => {
+function showFeedback(html, type) {
+  feedbackEl.innerHTML = html;
+  feedbackEl.className = `feedback feedback--${type}`;
+  feedbackEl.hidden = false;
+  feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideFeedback() {
+  feedbackEl.hidden = true;
+  feedbackEl.innerHTML = '';
+}
+
+function setLoading(isLoading) {
+  submitButton.disabled = isLoading;
+  submitButton.textContent = isLoading ? 'Gerando documento…' : 'Gerar documento PDF';
+}
+
+function extrairMensagemErro(payload) {
+  if (!payload) return 'Não foi possível processar o cadastro. Tente novamente.';
+  if (typeof payload.detail === 'string') return payload.detail;
+  if (Array.isArray(payload.detail)) {
+    return payload.detail
+      .map((erro) => erro.msg || 'Campo inválido.')
+      .join(' ');
+  }
+  return 'Não foi possível processar o cadastro. Tente novamente.';
+}
+
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  hideFeedback();
 
   if (!validateForm()) {
     return;
@@ -136,13 +170,50 @@ form.addEventListener('submit', (event) => {
   const payload = {
     nome: nomeInput.value.trim(),
     tipo_documento: docType,
-    documento: onlyDigits(documentoInput.value),
+    documento: documentoInput.value,
     email: emailInput.value.trim(),
-    telefone: onlyDigits(telefoneInput.value),
+    telefone: telefoneInput.value,
     cargo: cargoInput.value.trim(),
   };
 
-  // Integração com o back-end (FastAPI) será conectada aqui:
-  // fetch('/api/cadastro', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
-  console.log('Dados prontos para envio ao back-end:', payload);
+  setLoading(true);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/cadastro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      showFeedback(
+        `<p class="feedback__title">Não foi possível gerar o documento</p><p>${extrairMensagemErro(data)}</p>`,
+        'error'
+      );
+      return;
+    }
+
+    const protocolo = data.processo.protocolo;
+    const pdfUrl = `${API_BASE_URL}${data.pdf_download_url}`;
+
+    showFeedback(
+      `<p class="feedback__title">Documento gerado com sucesso</p>
+       <p>Baixe o PDF, assine (digitalmente ou impresso) e prossiga para a etapa de reenvio do documento assinado.</p>
+       <p class="feedback__protocolo">Protocolo: ${protocolo}</p>
+       <a class="feedback__link" href="${pdfUrl}" target="_blank" rel="noopener">Baixar documento PDF</a>`,
+      'success'
+    );
+
+    form.reset();
+    setDocType('cpf');
+  } catch (error) {
+    showFeedback(
+      `<p class="feedback__title">Falha de conexão</p><p>Não foi possível falar com o servidor. Verifique se a API está em execução e tente novamente.</p>`,
+      'error'
+    );
+  } finally {
+    setLoading(false);
+  }
 });
