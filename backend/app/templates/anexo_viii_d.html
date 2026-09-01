@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 2.5cm 2cm;
+    }
+    body {
+      font-family: "Helvetica", "Arial", sans-serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+    }
+    h1 {
+      font-size: 13pt;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .subtitulo {
+      font-size: 10pt;
+      color: #444;
+      margin-bottom: 20px;
+    }
+    table.dados {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    table.dados td {
+      border: 1px solid #333;
+      padding: 6px 8px;
+    }
+    table.dados td.rotulo {
+      width: 30%;
+      font-weight: bold;
+      background: #f2f2f2;
+    }
+    .data-cidade {
+      text-align: right;
+      margin-bottom: 20px;
+    }
+    .corpo {
+      text-align: justify;
+      line-height: 1.5;
+    }
+    ul.pedidos {
+      line-height: 1.6;
+    }
+    .assinatura {
+      margin-top: 60px;
+      text-align: center;
+    }
+    .assinatura .linha {
+      border-top: 1px solid #333;
+      width: 60%;
+      margin: 0 auto 4px;
+    }
+    .protocolo {
+      position: fixed;
+      bottom: 1cm;
+      right: 2cm;
+      font-size: 8pt;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Formulário para Pedido de Anuência para Alienação entre Particulares</h1>
+  <p class="subtitulo">Companhia de Desenvolvimento Econômico de Goiás — Regulamento de Alienação de Áreas</p>
+
+  <table class="dados">
+    <tr>
+      <td class="rotulo">Processo N°</td>
+      <td>{{ protocolo }}</td>
+    </tr>
+    <tr>
+      <td class="rotulo">Nome Empresarial</td>
+      <td>{{ nome_empresarial }}</td>
+    </tr>
+    <tr>
+      <td class="rotulo">CNPJ</td>
+      <td>{{ cnpj }}</td>
+    </tr>
+    <tr>
+      <td class="rotulo">Endereço</td>
+      <td>{{ endereco }}</td>
+    </tr>
+    <tr>
+      <td class="rotulo">Telefone</td>
+      <td>{{ telefone }}</td>
+    </tr>
+    <tr>
+      <td class="rotulo">E-mail</td>
+      <td>{{ email }}</td>
+    </tr>
+  </table>
+
+  <p class="data-cidade">{{ cidade_data }}</p>
+
+  <p class="corpo">Ilmo. Sr. Diretor Presidente da Companhia de Desenvolvimento Econômico de Goiás,</p>
+
+  <p class="corpo">
+    A empresa <strong>{{ nome_empresarial }}</strong>, supra qualificada, por meio de seu/sua
+    representante legal, vem REQUERER:
+  </p>
+
+  <ul class="pedidos">
+    <li>Juntada de documentação ao processo administrativo;</li>
+    <li>Declaração de existência de processo junto à Companhia;</li>
+    <li>Declaração de regularidade junto à Companhia;</li>
+    <li>Declaração de assentamento da empresa no endereço supracitado;</li>
+    <li>Realização de reunião para tratativas sobre acordo em processo judicial (deverá ser acompanhado de procuração com poderes específicos);</li>
+    <li>Cópia do processo administrativo;</li>
+    <li>Outros: _________________________________________________</li>
+  </ul>
+
+  <p class="corpo">Tal solicitação se dá em virtude de (inserir motivação).</p>
+
+  <p class="corpo">Atenciosamente,</p>
+
+  <div class="assinatura">
+    <div class="linha"></div>
+    <p>Assinatura do(a) representante legal da empresa<br>
+    {{ nome_empresarial }} (com carimbo CNPJ)</p>
+  </div>
+
+  <div class="protocolo">Protocolo: {{ protocolo }}</div>
+
+</body>
+</html>
