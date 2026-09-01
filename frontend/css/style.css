@@ -1,0 +1,35 @@
+:root {
+  --color-primary: #1c5d3b;
+  --color-primary-dark: #123f28;
+  --color-bg: #f4f6f5;
+  --color-surface: #ffffff;
+  --color-text: #1f2a24;
+  --color-border: #d7ddda;
+  --radius: 8px;
+  --font-base: "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+main {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+h1 {
+  color: var(--color-primary-dark);
+  margin-top: 0;
+}
