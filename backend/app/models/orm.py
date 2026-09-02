@@ -44,7 +44,11 @@ class ProcessoDocumento(Base):
     protocolo = Column(String(50), nullable=False, unique=True, index=True)
     caminho_pdf_preenchido = Column(String(500))
     caminho_pdf_assinado = Column(String(500))
-    status = Column(Enum(StatusProcesso), nullable=False, default=StatusProcesso.PENDENTE)
+    status = Column(
+        Enum(StatusProcesso, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
+        nullable=False,
+        default=StatusProcesso.PENDENTE,
+    )
     texto_recibo = Column(Text)
     data_geracao = Column(DateTime, server_default=func.now())
     data_upload_assinado = Column(DateTime, nullable=True)
