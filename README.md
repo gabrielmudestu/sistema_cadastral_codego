@@ -36,8 +36,8 @@ sistema_cadastral_codego/
 ├── database/
 │   └── migrations/       # Scripts de schema/migração MySQL
 ├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
+│   └── Dockerfile
+├── docker-compose.yml
 └── docs/                 # Documentação complementar do projeto
 ```
 
@@ -52,7 +52,7 @@ sistema_cadastral_codego/
 
 ```bash
 cp .env.example .env
-docker compose -f docker/docker-compose.yml up --build
+docker compose up --build
 ```
 
 A API ficará disponível em `http://localhost:8000` e o front-end estático em `http://localhost:8080` (ajustar conforme configuração final do compose).
