@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app.database import Base, engine, wait_for_db
 from app.routers import cadastro, upload, recibo, mensagens, processos
 
-# Cria as tabelas automaticamente caso ainda não existam
+# Espera o MySQL estar realmente pronto (evita crash na corrida de
+# inicialização do container) e cria as tabelas caso ainda não existam
 # (em produção, prefira gerenciar via Alembic/migrations)
+wait_for_db()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
