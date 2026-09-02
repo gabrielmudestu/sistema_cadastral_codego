@@ -48,18 +48,8 @@ body {
 
 .letterhead__mark {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 1.5px solid var(--gold);
-  color: var(--primary-dark);
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface);
+  height: 56px;
+  width: auto;
 }
 
 .letterhead__org {
