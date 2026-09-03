@@ -111,6 +111,17 @@ body {
   color: var(--surface);
 }
 
+.stepper__item--done {
+  border-bottom-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.stepper__item--done .stepper__index {
+  background: var(--surface);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 /* Card */
 
 .card {
@@ -397,6 +408,80 @@ input:focus-visible {
   color: var(--ink);
 }
 
+/* Upload de arquivo */
+
+.file-drop {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.file-drop input[type="file"] {
+  font-size: 13px;
+  font-family: var(--font-sans);
+}
+
+.file-drop__hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.file-drop__selected {
+  font-size: 13px;
+  color: var(--primary-dark);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Card de protocolo localizado */
+
+.processo-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.processo-info[hidden] {
+  display: none;
+}
+
+.processo-info__label {
+  color: var(--ink-soft);
+}
+
+.processo-info__valor {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.processo-info__status {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: #eef0e6;
+  color: var(--ink-soft);
+}
+
+.processo-info__status--assinado {
+  background: #e3efe8;
+  color: var(--primary-dark);
+}
+
 /* Feedback (sucesso / erro do envio) */
 
 .feedback {
@@ -431,6 +516,12 @@ input:focus-visible {
   margin: 4px 0 12px;
 }
 
+.feedback__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .feedback__link {
   display: inline-block;
   color: var(--surface);
@@ -444,6 +535,16 @@ input:focus-visible {
 
 .feedback__link:hover {
   background: var(--primary-dark);
+}
+
+.feedback__link--secondary {
+  background: transparent;
+  color: var(--primary-dark);
+  border: 1px solid var(--primary);
+}
+
+.feedback__link--secondary:hover {
+  background: #e3efe8;
 }
 
 .btn-primary[disabled] {

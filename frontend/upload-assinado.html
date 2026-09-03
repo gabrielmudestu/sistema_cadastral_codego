@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envio do Documento Assinado — Sistema Cadastral CODEGO</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="letterhead">
+      <img class="letterhead__mark" src="assets/brasao_codego.png" alt="Brasão da Companhia de Desenvolvimento Econômico de Goiás">
+      <div class="letterhead__text">
+        <p class="letterhead__org">Companhia de Desenvolvimento Econômico de Goiás</p>
+        <h1 class="letterhead__title">Sistema Cadastral</h1>
+      </div>
+    </header>
+
+    <ol class="stepper" aria-label="Etapas do processo">
+      <li class="stepper__item stepper__item--done">
+        <span class="stepper__index">1</span>
+        <span class="stepper__label">Cadastro</span>
+      </li>
+      <li class="stepper__item stepper__item--current">
+        <span class="stepper__index">2</span>
+        <span class="stepper__label">Assinatura</span>
+      </li>
+      <li class="stepper__item">
+        <span class="stepper__index">3</span>
+        <span class="stepper__label">Recibo</span>
+      </li>
+      <li class="stepper__item">
+        <span class="stepper__index">4</span>
+        <span class="stepper__label">Mensagens</span>
+      </li>
+    </ol>
+
+    <main class="card">
+      <div class="card__intro">
+        <h2 class="card__title">Envio do documento assinado</h2>
+        <p class="card__desc">
+          Informe o protocolo do processo e anexe o PDF já assinado (digitalmente ou
+          impresso, assinado e digitalizado). Depois do envio, o sistema valida o
+          recebimento e libera a emissão do recibo eletrônico.
+        </p>
+      </div>
+
+      <form id="form-upload" novalidate>
+
+        <div class="field">
+          <label for="protocolo">Número do protocolo</label>
+          <input type="text" id="protocolo" name="protocolo" placeholder="REC-2026-00000" required>
+          <p class="field__error" data-error-for="protocolo"></p>
+        </div>
+
+        <div id="processo-info" class="processo-info" hidden>
+          <div>
+            <span class="processo-info__label">Empresa: </span>
+            <span class="processo-info__valor" id="processo-info-nome"></span>
+          </div>
+          <span class="processo-info__status" id="processo-info-status"></span>
+        </div>
+
+        <div class="field">
+          <label for="arquivo">Documento assinado (PDF)</label>
+          <div class="file-drop">
+            <input type="file" id="arquivo" name="arquivo" accept="application/pdf" required>
+            <p class="file-drop__hint">Somente PDF, até 10MB.</p>
+            <p class="file-drop__selected" id="arquivo-selecionado" hidden></p>
+          </div>
+          <p class="field__error" data-error-for="arquivo"></p>
+        </div>
+
+        <div class="card__footer">
+          <p class="card__footer-note">
+            O envio substitui qualquer documento assinado anterior deste mesmo protocolo.
+          </p>
+          <button type="submit" class="btn-primary" id="btn-submit">Enviar documento assinado</button>
+        </div>
+
+      </form>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite" hidden></div>
+
+    </main>
+
+  </div>
+
+  <script src="js/upload-assinado.js"></script>
+</body>
+</html>
