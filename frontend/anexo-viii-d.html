@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anexo VIII-D — Sistema Cadastral CODEGO</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="letterhead">
+      <img class="letterhead__mark" src="assets/brasao_codego.png" alt="Brasão da Companhia de Desenvolvimento Econômico de Goiás">
+      <div class="letterhead__text">
+        <p class="letterhead__org">Companhia de Desenvolvimento Econômico de Goiás</p>
+        <h1 class="letterhead__title">Anexo VIII-D — Solicitações Diversas</h1>
+      </div>
+    </header>
+
+    <ol class="stepper" aria-label="Etapas do processo">
+      <li class="stepper__item stepper__item--current">
+        <span class="stepper__index">1</span>
+        <span class="stepper__label">Cadastro</span>
+      </li>
+      <li class="stepper__item">
+        <span class="stepper__index">2</span>
+        <span class="stepper__label">Assinatura</span>
+      </li>
+      <li class="stepper__item">
+        <span class="stepper__index">3</span>
+        <span class="stepper__label">Recibo</span>
+      </li>
+      <li class="stepper__item">
+        <span class="stepper__index">4</span>
+        <span class="stepper__label">Mensagens</span>
+      </li>
+    </ol>
+
+    <main class="card">
+      <div class="card__intro">
+        <h2 class="card__title">Pedido de Anuência para Alienação entre Particulares</h2>
+        <p class="card__desc">
+          Preencha todos os campos abaixo para gerar o documento em PDF no modelo oficial
+          do Anexo VIII-D. Depois de gerado, baixe o arquivo, assine digitalmente ou
+          imprima e assine manualmente, e reenvie o documento assinado na etapa seguinte.
+        </p>
+      </div>
+
+      <form id="form-anexo-viii-d" novalidate>
+
+        <h3 class="section-title">Dados da empresa</h3>
+
+        <div class="field">
+          <label for="processo_numero">Processo N°</label>
+          <input type="text" id="processo_numero" name="processo_numero" required>
+          <p class="field__error" data-error-for="processo_numero"></p>
+        </div>
+
+        <div class="field">
+          <label for="nome_empresarial">Nome Empresarial</label>
+          <input type="text" id="nome_empresarial" name="nome_empresarial" required>
+          <p class="field__error" data-error-for="nome_empresarial"></p>
+        </div>
+
+        <div class="field">
+          <label for="cnpj">CNPJ</label>
+          <input type="text" id="cnpj" name="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" required>
+          <p class="field__error" data-error-for="cnpj"></p>
+        </div>
+
+        <div class="field">
+          <label for="endereco">Endereço</label>
+          <input type="text" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade-UF" required>
+          <p class="field__error" data-error-for="endereco"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="telefone">Telefone</label>
+            <input type="tel" id="telefone" name="telefone" inputmode="tel" placeholder="(00) 00000-0000" required>
+            <p class="field__error" data-error-for="telefone"></p>
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+            <p class="field__error" data-error-for="email"></p>
+          </div>
+        </div>
+
+        <h3 class="section-title">Representante legal</h3>
+
+        <div class="field">
+          <label for="representante_nome">Nome completo</label>
+          <input type="text" id="representante_nome" name="representante_nome" autocomplete="name" required>
+          <p class="field__error" data-error-for="representante_nome"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="representante_estado_civil">Estado civil</label>
+            <select id="representante_estado_civil" name="representante_estado_civil" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Solteiro(a)">Solteiro(a)</option>
+              <option value="Casado(a)">Casado(a)</option>
+              <option value="Divorciado(a)">Divorciado(a)</option>
+              <option value="Viúvo(a)">Viúvo(a)</option>
+              <option value="União estável">União estável</option>
+            </select>
+            <p class="field__error" data-error-for="representante_estado_civil"></p>
+          </div>
+
+          <div class="field">
+            <label for="representante_rg">RG</label>
+            <input type="text" id="representante_rg" name="representante_rg" placeholder="0000000 SSP-UF" required>
+            <p class="field__error" data-error-for="representante_rg"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="representante_cpf">CPF</label>
+          <input type="text" id="representante_cpf" name="representante_cpf" inputmode="numeric" placeholder="000.000.000-00" required>
+          <p class="field__error" data-error-for="representante_cpf"></p>
+        </div>
+
+        <div class="field">
+          <label for="representante_endereco">Endereço</label>
+          <input type="text" id="representante_endereco" name="representante_endereco" placeholder="Rua, número, bairro, cidade-UF" required>
+          <p class="field__error" data-error-for="representante_endereco"></p>
+        </div>
+
+        <h3 class="section-title">Solicitações</h3>
+        <p class="section-desc">Selecione ao menos uma opção.</p>
+
+        <div class="checkbox-group" id="solicitacoes-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="juntada_documentacao">
+            <span>Juntada de documentação ao processo administrativo</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="declaracao_existencia">
+            <span>Declaração de existência de processo junto à Companhia</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="declaracao_regularidade">
+            <span>Declaração de regularidade junto à Companhia</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="declaracao_assentamento">
+            <span>Declaração de assentamento da empresa no endereço supracitado</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="reuniao_tratativas">
+            <span>Realização de reunião para tratativas sobre acordo em processo judicial (deverá ser acompanhado de procuração com poderes específicos)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="copia_processo">
+            <span>Cópia do processo administrativo</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="solicitacoes" value="outros" id="check-outros">
+            <span>Outros</span>
+          </label>
+        </div>
+        <p class="field__error" data-error-for="solicitacoes"></p>
+
+        <div class="field" id="outros-texto-wrapper" hidden>
+          <label for="outros_texto">Descreva "Outros"</label>
+          <input type="text" id="outros_texto" name="outros_texto">
+          <p class="field__error" data-error-for="outros_texto"></p>
+        </div>
+
+        <h3 class="section-title">Motivação</h3>
+
+        <div class="field">
+          <label for="motivacao">Tal solicitação se dá em virtude de</label>
+          <textarea id="motivacao" name="motivacao" rows="3" placeholder="Descreva o motivo da solicitação" required></textarea>
+          <p class="field__error" data-error-for="motivacao"></p>
+        </div>
+
+        <div class="card__footer">
+          <p class="card__footer-note">
+            Os dados são usados apenas para geração do documento e do protocolo deste processo.
+          </p>
+          <button type="submit" class="btn-primary" id="btn-submit">Gerar documento PDF</button>
+        </div>
+
+      </form>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite" hidden></div>
+
+    </main>
+
+  </div>
+
+  <script src="js/anexo-viii-d.js"></script>
+</body>
+</html>

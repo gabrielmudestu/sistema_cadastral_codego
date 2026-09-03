@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    JSON,
     func,
 )
 from sqlalchemy.orm import relationship
@@ -20,6 +21,10 @@ class StatusProcesso(str, enum.Enum):
     PENDENTE = "Pendente"
     ASSINADO = "Assinado"
     CANCELADO = "Cancelado"
+
+
+class TipoDocumento(str, enum.Enum):
+    ANEXO_VIII_D = "anexo_viii_d"
 
 
 class Usuario(Base):
@@ -42,6 +47,12 @@ class ProcessoDocumento(Base):
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     protocolo = Column(String(50), nullable=False, unique=True, index=True)
+    tipo_documento = Column(
+        Enum(TipoDocumento, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
+        nullable=False,
+        default=TipoDocumento.ANEXO_VIII_D,
+    )
+    dados_formulario = Column(JSON, nullable=True)
     caminho_pdf_preenchido = Column(String(500))
     caminho_pdf_assinado = Column(String(500))
     status = Column(

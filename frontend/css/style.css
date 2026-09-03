@@ -138,6 +138,92 @@ body {
 
 /* Form fields */
 
+/* Seções do formulário */
+
+.section-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  margin: 32px 0 4px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.field + .section-title,
+.checkbox-group + .field .section-title {
+  margin-top: 32px;
+}
+
+.section-desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* Select e textarea */
+
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234b564d'><path d='M5.25 7.5L10 12.25L14.75 7.5H5.25Z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: var(--font-sans);
+}
+
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-color: var(--primary);
+}
+
+/* Checkboxes de solicitações */
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
 .field {
   margin-bottom: 20px;
 }
@@ -267,6 +353,49 @@ input:focus-visible {
 }
 
 /* Responsive */
+
+/* Lista de tipos de documento (página inicial) */
+
+.doc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-list__link {
+  display: block;
+  padding: 16px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.doc-list__link:hover {
+  border-color: var(--primary);
+  background: #f7f8f4;
+}
+
+.doc-list__tag {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.doc-list__title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
 
 /* Feedback (sucesso / erro do envio) */
 

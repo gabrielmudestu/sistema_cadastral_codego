@@ -1,29 +1,33 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.orm import Usuario, ProcessoDocumento, StatusProcesso
-from app.schemas.cadastro import CadastroCreate, CadastroResponse
+from app.models.orm import Usuario, ProcessoDocumento, StatusProcesso, TipoDocumento
+from app.schemas.cadastro import CadastroResponse
+from app.schemas.anexo_viii_d import AnexoViiiDCreate
 from app.services.protocolo import gerar_protocolo
 from app.services.pdf_generator import gerar_pdf_anexo_viii_d
 
 router = APIRouter()
 
 
-@router.post("", response_model=CadastroResponse, status_code=201)
-def criar_cadastro(payload: CadastroCreate, db: Session = Depends(get_db)):
+@router.post("/anexo-viii-d", response_model=CadastroResponse, status_code=201)
+def criar_cadastro_anexo_viii_d(payload: AnexoViiiDCreate, db: Session = Depends(get_db)):
     """
-    Cria (ou reaproveita) o usuário, abre um novo processo com protocolo único
-    e gera o PDF preenchido para download (Etapa 1 do fluxo).
+    Cria (ou reaproveita) o usuário/empresa pelo CNPJ, abre um novo processo do
+    tipo Anexo VIII-D com protocolo único, e gera o PDF preenchido no modelo
+    oficial do documento (Etapa 1 do fluxo).
     """
-    usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == payload.documento).first()
+    usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == payload.cnpj).first()
     if usuario is None:
         usuario = Usuario(
-            nome=payload.nome,
-            cpf_cnpj=payload.documento,
+            nome=payload.nome_empresarial,
+            cpf_cnpj=payload.cnpj,
             email=payload.email,
             telefone=payload.telefone,
-            cargo=payload.cargo,
+            cargo="Representante legal",
         )
         db.add(usuario)
         db.commit()
@@ -33,11 +37,13 @@ def criar_cadastro(payload: CadastroCreate, db: Session = Depends(get_db)):
     while db.query(ProcessoDocumento).filter(ProcessoDocumento.protocolo == protocolo).first():
         protocolo = gerar_protocolo()
 
-    caminho_pdf = gerar_pdf_anexo_viii_d(usuario, protocolo)
+    caminho_pdf = gerar_pdf_anexo_viii_d(payload, protocolo)
 
     processo = ProcessoDocumento(
         usuario_id=usuario.id,
         protocolo=protocolo,
+        tipo_documento=TipoDocumento.ANEXO_VIII_D,
+        dados_formulario=json.loads(payload.model_dump_json()),
         caminho_pdf_preenchido=caminho_pdf,
         status=StatusProcesso.PENDENTE,
     )

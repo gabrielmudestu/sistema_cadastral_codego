@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulário Cadastral — Sistema Cadastral CODEGO</title>
+  <title>Sistema Cadastral CODEGO</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,94 +17,25 @@
       </div>
     </header>
 
-    <ol class="stepper" aria-label="Etapas do processo">
-      <li class="stepper__item stepper__item--current">
-        <span class="stepper__index">1</span>
-        <span class="stepper__label">Cadastro</span>
-      </li>
-      <li class="stepper__item">
-        <span class="stepper__index">2</span>
-        <span class="stepper__label">Assinatura</span>
-      </li>
-      <li class="stepper__item">
-        <span class="stepper__index">3</span>
-        <span class="stepper__label">Recibo</span>
-      </li>
-      <li class="stepper__item">
-        <span class="stepper__index">4</span>
-        <span class="stepper__label">Mensagens</span>
-      </li>
-    </ol>
-
     <main class="card">
       <div class="card__intro">
-        <h2 class="card__title">Formulário cadastral</h2>
+        <h2 class="card__title">Qual documento você deseja solicitar?</h2>
         <p class="card__desc">
-          Preencha os dados abaixo para gerar o documento em PDF. Depois de gerado,
-          baixe o arquivo, assine digitalmente ou imprima e assine manualmente, e
-          reenvie o documento assinado na etapa seguinte.
+          Selecione o tipo de formulário abaixo para preencher os dados e gerar o
+          documento em PDF.
         </p>
       </div>
 
-      <form id="form-cadastro" novalidate>
-
-        <div class="field">
-          <label for="nome">Nome completo</label>
-          <input type="text" id="nome" name="nome" autocomplete="name" required>
-          <p class="field__error" data-error-for="nome"></p>
-        </div>
-
-        <div class="field">
-          <label for="documento">CPF ou CNPJ</label>
-          <div class="field__with-toggle">
-            <input type="text" id="documento" name="documento" inputmode="numeric"
-                   placeholder="000.000.000-00" required>
-            <div class="doc-toggle" role="group" aria-label="Tipo de documento">
-              <button type="button" class="doc-toggle__btn is-active" data-doc-type="cpf">CPF</button>
-              <button type="button" class="doc-toggle__btn" data-doc-type="cnpj">CNPJ</button>
-            </div>
-          </div>
-          <p class="field__error" data-error-for="documento"></p>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" autocomplete="email" required>
-            <p class="field__error" data-error-for="email"></p>
-          </div>
-
-          <div class="field">
-            <label for="telefone">Telefone / WhatsApp</label>
-            <input type="tel" id="telefone" name="telefone" inputmode="tel"
-                   placeholder="(00) 00000-0000" autocomplete="tel" required>
-            <p class="field__error" data-error-for="telefone"></p>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="cargo">Cargo / Representação</label>
-          <input type="text" id="cargo" name="cargo"
-                 placeholder="Ex.: Diretor, Representante legal"
-                 autocomplete="organization-title" required>
-          <p class="field__error" data-error-for="cargo"></p>
-        </div>
-
-        <div class="card__footer">
-          <p class="card__footer-note">
-            Os dados são usados apenas para geração do documento e do protocolo deste processo.
-          </p>
-          <button type="submit" class="btn-primary" id="btn-submit">Gerar documento PDF</button>
-        </div>
-
-      </form>
-
-      <div class="feedback" id="feedback" role="status" aria-live="polite" hidden></div>
-
+      <ul class="doc-list">
+        <li class="doc-list__item">
+          <a class="doc-list__link" href="anexo-viii-d.html">
+            <span class="doc-list__tag">Anexo VIII-D</span>
+            <span class="doc-list__title">Pedido de Anuência para Alienação entre Particulares</span>
+          </a>
+        </li>
+      </ul>
     </main>
 
   </div>
-
-  <script src="js/cadastro.js"></script>
 </body>
 </html>
