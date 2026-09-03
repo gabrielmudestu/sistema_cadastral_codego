@@ -89,6 +89,12 @@
     ul.pedidos li {
       margin-bottom: 4px;
     }
+    .linha-preencher {
+      display: inline-block;
+      min-width: 65%;
+      border-bottom: 1pt solid #333;
+      padding-bottom: 1px;
+    }
 
     .assinatura {
       margin-top: 70px;
@@ -167,7 +173,11 @@
 
   <ul class="pedidos">
     {% for item in itens_solicitacao %}
-    <li>{{ item }};</li>
+      {% if item.valor_linha %}
+      <li>{{ item.texto }} <span class="linha-preencher">{{ item.valor_linha }}</span></li>
+      {% else %}
+      <li>{{ item.texto }};</li>
+      {% endif %}
     {% endfor %}
   </ul>
 

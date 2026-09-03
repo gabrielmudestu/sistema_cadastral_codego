@@ -185,7 +185,7 @@ select {
 
 textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 150px;
   font-family: var(--font-sans);
 }
 

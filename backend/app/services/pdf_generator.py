@@ -50,16 +50,18 @@ def gerar_pdf_anexo_viii_d(dados: AnexoViiiDCreate, protocolo: str) -> str:
     """
     template = _env.get_template("anexo_viii_d.html")
 
-    # Monta a lista de solicitações marcadas, na ordem original do documento,
-    # substituindo "Outros" pelo texto livre informado.
+    # Monta a lista de solicitações marcadas, na ordem original do documento.
+    # O item "Outros" é marcado à parte para ser desenhado como uma linha
+    # preenchida (sublinhado), no mesmo espírito do "Outros:____________"
+    # do modelo original.
     itens_solicitacao = []
     for chave, rotulo in SOLICITACOES_ANEXO_VIII_D.items():
         if chave not in dados.solicitacoes:
             continue
         if chave == "outros":
-            itens_solicitacao.append(f"Outros: {dados.outros_texto}")
+            itens_solicitacao.append({"texto": "Outros:", "valor_linha": dados.outros_texto})
         else:
-            itens_solicitacao.append(rotulo)
+            itens_solicitacao.append({"texto": rotulo, "valor_linha": None})
 
     html_renderizado = template.render(
         brasao_data_uri=_BRASAO_DATA_URI,
