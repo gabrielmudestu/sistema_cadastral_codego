@@ -10,6 +10,30 @@ from app.config import settings
 logger = logging.getLogger("codego.email")
 
 
+def enviar_email_documento_assinado(
+    destinatario_email: str,
+    nome_empresarial: str,
+    protocolo: str,
+    caminho_pdf_assinado: str,
+) -> tuple[bool, str | None]:
+    """
+    Envia um e-mail de confirmação de recebimento do documento assinado, com o
+    PDF assinado em anexo. Escolhe a implementação conforme
+    settings.email_provider ("smtp" ou "outlook_graph"). Retorna (True, None)
+    se o envio foi bem-sucedido, ou (False, mensagem_de_erro) caso contrário —
+    nunca levanta exceção, já que falha de e-mail não deve derrubar o upload,
+    que já foi salvo com sucesso.
+    """
+    if settings.email_provider == "outlook_graph":
+        from app.services.outlook_email_service import enviar_email_documento_assinado_outlook
+
+        return enviar_email_documento_assinado_outlook(
+            destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado
+        )
+
+    return _enviar_via_smtp(destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado)
+
+
 def _montar_corpo_texto(nome_empresarial: str, protocolo: str) -> str:
     return (
         f"Olá,\n\n"
@@ -45,7 +69,7 @@ def _montar_corpo_html(nome_empresarial: str, protocolo: str) -> str:
     """
 
 
-def enviar_email_documento_assinado(
+def _enviar_via_smtp(
     destinatario_email: str,
     nome_empresarial: str,
     protocolo: str,

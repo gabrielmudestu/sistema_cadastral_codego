@@ -17,7 +17,10 @@ class Settings(BaseSettings):
 
     protocol_prefix: str = "REC"
 
-    # E-mail (SMTP) — padrão configurado para Outlook/Office365
+    # E-mail — provider "smtp" (Gmail etc.) ou "outlook_graph" (Microsoft Graph, para Outlook/Hotmail)
+    email_provider: str = "smtp"
+
+    # E-mail (SMTP) — usado quando email_provider="smtp"
     smtp_host: str = "smtp.office365.com"
     smtp_port: int = 587
     smtp_use_tls: bool = True
@@ -25,6 +28,12 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_name: str = "Sistema Cadastral CODEGO"
     smtp_enabled: bool = False
+
+    # Outlook via Microsoft Graph (OAuth2) — usado quando email_provider="outlook_graph"
+    outlook_client_id: str = ""
+    outlook_tenant: str = "consumers"  # "consumers" para contas pessoais (@outlook.com, @hotmail.com)
+    outlook_sender_email: str = ""  # o e-mail da conta autorizada no login único (device code flow)
+    outlook_token_cache_path: str = "/app/storage/outlook_token_cache.bin"
 
     class Config:
         env_file = ".env"

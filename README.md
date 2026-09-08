@@ -48,6 +48,67 @@ sistema_cadastral_codego/
 - **mensagens** — remetente, assunto, conteúdo, vínculo opcional com processo
 - **anexos_mensagem** — nome original, caminho no storage, tamanho em bytes, tipo MIME
 
+## Envio de e-mail
+
+O sistema envia uma confirmação por e-mail (com o PDF assinado em anexo) quando
+o documento assinado é recebido (Tela 2). Dois provedores são suportados,
+configurados via `EMAIL_PROVIDER` no `.env`:
+
+### Opção A — SMTP (Gmail, etc.)
+
+Simples: usuário + senha de app. Não funciona mais com contas Outlook/Hotmail
+pessoais (veja Opção B). No `.env`:
+
+```
+EMAIL_PROVIDER=smtp
+SMTP_ENABLED=true
+SMTP_HOST=smtp.gmail.com
+SMTP_USER=seu_email@gmail.com
+SMTP_PASSWORD=sua_senha_de_app_de_16_caracteres
+```
+
+Requer verificação em duas etapas ativada na conta Google, com uma senha de
+app gerada em [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+
+### Opção B — Outlook/Hotmail (Microsoft Graph API)
+
+A Microsoft desativou a autenticação básica (usuário+senha, incluindo senhas
+de app) por SMTP para contas pessoais @outlook.com/@hotmail.com. Para usar uma
+conta Outlook, o sistema envia pela Microsoft Graph API com OAuth2:
+
+1. **Cadastre um app no Azure** (gratuito, usa a mesma conta Microsoft que vai
+   enviar os e-mails):
+   - Acesse [portal.azure.com](https://portal.azure.com) → **Microsoft Entra ID**
+     → **Registros de aplicativo** → **Novo registro**
+   - Nome: `Sistema Cadastral CODEGO` (ou o que preferir)
+   - Tipos de conta compatíveis: **Contas somente em qualquer diretório
+     organizacional e contas pessoais da Microsoft**
+   - Não precisa de URI de redirecionamento
+   - Depois de criado, copie o **Application (client) ID** da página "Visão geral"
+   - Vá em **Autenticação** → ative **"Allow public client flows"** → Salvar
+   - Vá em **Permissões de API** → **Adicionar uma permissão** → **Microsoft
+     Graph** → **Permissões delegadas** → busque e marque **Mail.Send** →
+     Adicionar permissões
+
+2. **Configure o `.env`:**
+   ```
+   EMAIL_PROVIDER=outlook_graph
+   OUTLOOK_CLIENT_ID=<o Application (client) ID copiado acima>
+   OUTLOOK_TENANT=consumers
+   ```
+
+3. **Faça o login único** (autoriza o sistema a enviar como sua conta):
+   ```
+   docker compose exec backend python scripts/setup_outlook_auth.py
+   ```
+   Isso mostra um código e um link. Abra o link em qualquer navegador, digite
+   o código, faça login com a conta Outlook que vai enviar os e-mails, e
+   autorize. O token fica salvo em disco (persistido no volume Docker) e é
+   renovado automaticamente — não precisa logar de novo, a menos que o token
+   seja revogado.
+
+4. Reinicie o backend: `docker compose restart backend`
+
 ## Setup local
 
 ```bash
