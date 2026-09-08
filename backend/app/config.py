@@ -17,6 +17,10 @@ class Settings(BaseSettings):
 
     protocol_prefix: str = "REC"
 
+    # E-mail fixo da empresa que recebe a cópia de TODOS os documentos assinados
+    # (em vez do e-mail que a pessoa preencheu no cadastro)
+    notification_email: str = ""
+
     # E-mail — provider "smtp" (Gmail etc.) ou "outlook_graph" (Microsoft Graph, para Outlook/Hotmail)
     email_provider: str = "smtp"
 
@@ -26,6 +30,7 @@ class Settings(BaseSettings):
     smtp_use_tls: bool = True
     smtp_user: str = ""
     smtp_password: str = ""
+    smtp_from_email: str = ""  # e-mail do remetente (precisa estar verificado no provedor, ex: Brevo). Se vazio, usa smtp_user.
     smtp_from_name: str = "Sistema Cadastral CODEGO"
     smtp_enabled: bool = False
 

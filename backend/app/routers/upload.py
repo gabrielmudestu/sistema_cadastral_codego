@@ -56,8 +56,13 @@ async def enviar_documento_assinado(
     dados_formulario = processo.dados_formulario or {}
     nome_empresarial = dados_formulario.get("nome_empresarial") or processo.usuario.nome
 
+    # Todos os documentos assinados são enviados para o e-mail fixo da empresa
+    # (NOTIFICATION_EMAIL), não para o e-mail que a pessoa preencheu no cadastro.
+    # Se NOTIFICATION_EMAIL não estiver configurado, cai para o e-mail do cadastro.
+    destinatario = settings.notification_email or processo.usuario.email
+
     email_enviado, email_erro = enviar_email_documento_assinado(
-        destinatario_email=processo.usuario.email,
+        destinatario_email=destinatario,
         nome_empresarial=nome_empresarial,
         protocolo=processo.protocolo,
         caminho_pdf_assinado=caminho,
@@ -68,6 +73,6 @@ async def enviar_documento_assinado(
         "processo_id": processo.id,
         "status": processo.status,
         "email_enviado": email_enviado,
-        "email_destinatario": processo.usuario.email,
+        "email_destinatario": destinatario,
         "email_erro": email_erro,
     }
