@@ -560,6 +560,14 @@ input:focus-visible {
   color: var(--gold-dark);
 }
 
+.feedback__email-status code {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--danger);
+  word-break: break-word;
+}
+
 .btn-primary[disabled] {
   opacity: 0.6;
   cursor: not-allowed;

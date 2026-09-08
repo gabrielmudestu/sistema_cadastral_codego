@@ -182,7 +182,7 @@ form.addEventListener('submit', async (event) => {
 
     const avisoEmail = data.email_enviado
       ? `<p class="feedback__email-status feedback__email-status--ok">✓ Uma cópia foi enviada para ${data.email_destinatario}.</p>`
-      : `<p class="feedback__email-status feedback__email-status--warn">O documento foi salvo, mas não foi possível enviar a cópia por e-mail.</p>`;
+      : `<p class="feedback__email-status feedback__email-status--warn">O documento foi salvo, mas não foi possível enviar a cópia por e-mail.${data.email_erro ? ` <code>${data.email_erro}</code>` : ''}</p>`;
 
     showFeedback(
       `<p class="feedback__title">Documento assinado recebido com sucesso</p>

@@ -1,8 +1,15 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine, wait_for_db
 from app.routers import cadastro, upload, recibo, mensagens, processos
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:     %(name)s - %(message)s",
+)
 
 # Espera o MySQL estar realmente pronto (evita crash na corrida de
 # inicialização do container) e cria as tabelas caso ainda não existam

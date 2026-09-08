@@ -50,20 +50,22 @@ def enviar_email_documento_assinado(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
-) -> bool:
+) -> tuple[bool, str | None]:
     """
     Envia um e-mail de confirmação de recebimento do documento assinado, com o
-    PDF assinado em anexo. Retorna True se o envio foi bem-sucedido, False caso
-    contrário (nunca levanta exceção — falha de e-mail não deve derrubar o
-    upload, que já foi salvo com sucesso).
+    PDF assinado em anexo. Retorna (True, None) se o envio foi bem-sucedido, ou
+    (False, mensagem_de_erro) caso contrário — nunca levanta exceção, já que
+    falha de e-mail não deve derrubar o upload, que já foi salvo com sucesso.
     """
     if not settings.smtp_enabled:
-        logger.info("Envio de e-mail desabilitado (SMTP_ENABLED=false). Pulando envio.")
-        return False
+        motivo = "Envio de e-mail desabilitado (SMTP_ENABLED=false)."
+        logger.info(motivo)
+        return False, motivo
 
     if not settings.smtp_user or not settings.smtp_password:
-        logger.warning("SMTP_USER/SMTP_PASSWORD não configurados. Pulando envio de e-mail.")
-        return False
+        motivo = "SMTP_USER/SMTP_PASSWORD não configurados."
+        logger.warning(motivo)
+        return False, motivo
 
     mensagem = MIMEMultipart("mixed")
     mensagem["Subject"] = f"Documento assinado recebido — Protocolo {protocolo}"
@@ -92,7 +94,7 @@ def enviar_email_documento_assinado(
             servidor.login(settings.smtp_user, settings.smtp_password)
             servidor.sendmail(settings.smtp_user, [destinatario_email], mensagem.as_string())
         logger.info("E-mail de confirmação enviado para %s (protocolo %s).", destinatario_email, protocolo)
-        return True
+        return True, None
     except Exception as erro:  # noqa: BLE001 — falha de e-mail não pode derrubar o upload
-        logger.warning("Falha ao enviar e-mail de confirmação: %s", erro)
-        return False
+        logger.exception("Falha ao enviar e-mail de confirmação")
+        return False, f"{type(erro).__name__}: {erro}"

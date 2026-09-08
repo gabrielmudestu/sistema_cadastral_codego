@@ -56,7 +56,7 @@ async def enviar_documento_assinado(
     dados_formulario = processo.dados_formulario or {}
     nome_empresarial = dados_formulario.get("nome_empresarial") or processo.usuario.nome
 
-    email_enviado = enviar_email_documento_assinado(
+    email_enviado, email_erro = enviar_email_documento_assinado(
         destinatario_email=processo.usuario.email,
         nome_empresarial=nome_empresarial,
         protocolo=processo.protocolo,
@@ -69,4 +69,5 @@ async def enviar_documento_assinado(
         "status": processo.status,
         "email_enviado": email_enviado,
         "email_destinatario": processo.usuario.email,
+        "email_erro": email_erro,
     }
