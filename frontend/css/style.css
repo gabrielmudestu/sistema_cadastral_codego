@@ -547,6 +547,19 @@ input:focus-visible {
   background: #e3efe8;
 }
 
+.feedback__email-status {
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.feedback__email-status--ok {
+  color: var(--primary-dark);
+}
+
+.feedback__email-status--warn {
+  color: var(--gold-dark);
+}
+
 .btn-primary[disabled] {
   opacity: 0.6;
   cursor: not-allowed;

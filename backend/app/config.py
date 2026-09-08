@@ -17,6 +17,15 @@ class Settings(BaseSettings):
 
     protocol_prefix: str = "REC"
 
+    # E-mail (SMTP) — padrão configurado para Outlook/Office365
+    smtp_host: str = "smtp.office365.com"
+    smtp_port: int = 587
+    smtp_use_tls: bool = True
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from_name: str = "Sistema Cadastral CODEGO"
+    smtp_enabled: bool = False
+
     class Config:
         env_file = ".env"
         extra = "ignore"

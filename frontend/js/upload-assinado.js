@@ -180,9 +180,14 @@ form.addEventListener('submit', async (event) => {
       return;
     }
 
+    const avisoEmail = data.email_enviado
+      ? `<p class="feedback__email-status feedback__email-status--ok">✓ Uma cópia foi enviada para ${data.email_destinatario}.</p>`
+      : `<p class="feedback__email-status feedback__email-status--warn">O documento foi salvo, mas não foi possível enviar a cópia por e-mail.</p>`;
+
     showFeedback(
       `<p class="feedback__title">Documento assinado recebido com sucesso</p>
        <p>O processo de protocolo <strong>${protocolo}</strong> está agora com status <strong>${data.status}</strong>.</p>
+       ${avisoEmail}
        <p>O recibo eletrônico deste processo estará disponível na próxima etapa.</p>`,
       'success'
     );

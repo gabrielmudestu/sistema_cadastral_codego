@@ -9,6 +9,7 @@ from app.database import get_db
 from app.config import settings
 from app.models.orm import ProcessoDocumento, StatusProcesso
 from app.services.validacao_arquivos import validar_documento_assinado, salvar_arquivo
+from app.services.email_service import enviar_email_documento_assinado
 
 router = APIRouter()
 
@@ -52,8 +53,20 @@ async def enviar_documento_assinado(
     db.commit()
     db.refresh(processo)
 
+    dados_formulario = processo.dados_formulario or {}
+    nome_empresarial = dados_formulario.get("nome_empresarial") or processo.usuario.nome
+
+    email_enviado = enviar_email_documento_assinado(
+        destinatario_email=processo.usuario.email,
+        nome_empresarial=nome_empresarial,
+        protocolo=processo.protocolo,
+        caminho_pdf_assinado=caminho,
+    )
+
     return {
         "mensagem": "Documento assinado recebido com sucesso.",
         "processo_id": processo.id,
         "status": processo.status,
+        "email_enviado": email_enviado,
+        "email_destinatario": processo.usuario.email,
     }
