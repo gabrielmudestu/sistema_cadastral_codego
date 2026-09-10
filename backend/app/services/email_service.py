@@ -91,9 +91,11 @@ def _enviar_via_smtp(
         logger.warning(motivo)
         return False, motivo
 
+    remetente = settings.smtp_from_email or settings.smtp_user
+
     mensagem = MIMEMultipart("mixed")
     mensagem["Subject"] = f"Documento assinado recebido — Protocolo {protocolo}"
-    mensagem["From"] = formataddr((settings.smtp_from_name, settings.smtp_user))
+    mensagem["From"] = formataddr((settings.smtp_from_name, remetente))
     mensagem["To"] = destinatario_email
 
     corpo_alternativo = MIMEMultipart("alternative")
@@ -116,7 +118,7 @@ def _enviar_via_smtp(
             if settings.smtp_use_tls:
                 servidor.starttls()
             servidor.login(settings.smtp_user, settings.smtp_password)
-            servidor.sendmail(settings.smtp_user, [destinatario_email], mensagem.as_string())
+            servidor.sendmail(remetente, [destinatario_email], mensagem.as_string())
         logger.info("E-mail de confirmação enviado para %s (protocolo %s).", destinatario_email, protocolo)
         return True, None
     except Exception as erro:  # noqa: BLE001 — falha de e-mail não pode derrubar o upload
