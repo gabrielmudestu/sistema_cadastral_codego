@@ -15,10 +15,12 @@ def enviar_email_documento_assinado(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
+    documentos_recebidos: list[str] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia um e-mail de confirmação de recebimento do documento assinado, com o
-    PDF assinado em anexo. Escolhe a implementação conforme
+    PDF assinado em anexo e a lista dos documentos que acompanham o
+    requerimento (só os nomes; os arquivos ficam no sistema). Escolhe a implementação conforme
     settings.email_provider ("smtp" ou "outlook_graph"). Retorna (True, None)
     se o envio foi bem-sucedido, ou (False, mensagem_de_erro) caso contrário —
     nunca levanta exceção, já que falha de e-mail não deve derrubar o upload,
@@ -28,10 +30,12 @@ def enviar_email_documento_assinado(
         from app.services.outlook_email_service import enviar_email_documento_assinado_outlook
 
         return enviar_email_documento_assinado_outlook(
-            destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado
+            destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos_recebidos
         )
 
-    return _enviar_via_smtp(destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado)
+    return _enviar_via_smtp(
+        destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos_recebidos
+    )
 
 
 def enviar_email_nova_mensagem(
@@ -129,12 +133,20 @@ def montar_corpo_protocolo_html(nome_empresarial: str, nome_documento: str, prot
     """
 
 
-def _montar_corpo_texto(nome_empresarial: str, protocolo: str) -> str:
+def _montar_corpo_texto(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
+    lista_documentos = (
+        "Documentos anexados ao requerimento:\n"
+        + "".join(f"- {descricao}\n" for descricao in documentos_recebidos)
+        + "\n"
+        if documentos_recebidos
+        else ""
+    )
     return (
         f"Olá,\n\n"
         f"Confirmamos o recebimento do documento assinado referente ao processo de "
         f"{nome_empresarial}.\n\n"
         f"Protocolo: {protocolo}\n\n"
+        f"{lista_documentos}"
         f"Este e-mail confirma que o arquivo foi recebido e validado pelo Sistema "
         f"Cadastral CODEGO. Em breve o recibo eletrônico deste processo estará "
         f"disponível.\n\n"
@@ -143,7 +155,14 @@ def _montar_corpo_texto(nome_empresarial: str, protocolo: str) -> str:
     )
 
 
-def _montar_corpo_html(nome_empresarial: str, protocolo: str) -> str:
+def _montar_lista_documentos_html(documentos_recebidos: list[str] | None) -> str:
+    if not documentos_recebidos:
+        return ""
+    itens = "".join(f"<li>{descricao}</li>" for descricao in documentos_recebidos)
+    return f"<p><strong>Documentos anexados ao requerimento:</strong></p><ul>{itens}</ul>"
+
+
+def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
     return f"""
     <div style="font-family: Arial, sans-serif; color: #1a1a1a; font-size: 14px; line-height: 1.6;">
       <p>Olá,</p>
@@ -154,6 +173,7 @@ def _montar_corpo_html(nome_empresarial: str, protocolo: str) -> str:
       <p style="font-family: monospace; background: #f2f2f2; padding: 8px 12px; display: inline-block;">
         Protocolo: <strong>{protocolo}</strong>
       </p>
+      {_montar_lista_documentos_html(documentos_recebidos)}
       <p>
         Este e-mail confirma que o arquivo foi recebido e validado pelo
         <strong>Sistema Cadastral CODEGO</strong>. Em breve o recibo eletrônico
@@ -203,6 +223,7 @@ def _enviar_via_smtp(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
+    documentos_recebidos: list[str] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia um e-mail de confirmação de recebimento do documento assinado, com o
@@ -228,8 +249,8 @@ def _enviar_via_smtp(
     mensagem["To"] = destinatario_email
 
     corpo_alternativo = MIMEMultipart("alternative")
-    corpo_alternativo.attach(MIMEText(_montar_corpo_texto(nome_empresarial, protocolo), "plain", "utf-8"))
-    corpo_alternativo.attach(MIMEText(_montar_corpo_html(nome_empresarial, protocolo), "html", "utf-8"))
+    corpo_alternativo.attach(MIMEText(_montar_corpo_texto(nome_empresarial, protocolo, documentos_recebidos), "plain", "utf-8"))
+    corpo_alternativo.attach(MIMEText(_montar_corpo_html(nome_empresarial, protocolo, documentos_recebidos), "html", "utf-8"))
     mensagem.attach(corpo_alternativo)
 
     try:

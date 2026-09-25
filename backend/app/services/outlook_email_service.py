@@ -10,7 +10,9 @@ logger = logging.getLogger("codego.email.outlook")
 GRAPH_SEND_MAIL_URL = "https://graph.microsoft.com/v1.0/me/sendMail"
 
 
-def _montar_corpo_html(nome_empresarial: str, protocolo: str) -> str:
+def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
+    from app.services.email_service import _montar_lista_documentos_html
+
     return f"""
     <div style="font-family: Arial, sans-serif; color: #1a1a1a; font-size: 14px; line-height: 1.6;">
       <p>Olá,</p>
@@ -21,6 +23,7 @@ def _montar_corpo_html(nome_empresarial: str, protocolo: str) -> str:
       <p style="font-family: monospace; background: #f2f2f2; padding: 8px 12px; display: inline-block;">
         Protocolo: <strong>{protocolo}</strong>
       </p>
+      {_montar_lista_documentos_html(documentos_recebidos)}
       <p>
         Este e-mail confirma que o arquivo foi recebido e validado pelo
         <strong>Sistema Cadastral CODEGO</strong>. Em breve o recibo eletrônico
@@ -36,6 +39,7 @@ def enviar_email_documento_assinado_outlook(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
+    documentos_recebidos: list[str] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia o e-mail de confirmação via Microsoft Graph API (OAuth2), usando o
@@ -60,7 +64,7 @@ def enviar_email_documento_assinado_outlook(
             "subject": f"Documento assinado recebido — Protocolo {protocolo}",
             "body": {
                 "contentType": "HTML",
-                "content": _montar_corpo_html(nome_empresarial, protocolo),
+                "content": _montar_corpo_html(nome_empresarial, protocolo, documentos_recebidos),
             },
             "toRecipients": [{"emailAddress": {"address": destinatario_email}}],
         },

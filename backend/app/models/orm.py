@@ -77,6 +77,26 @@ class ProcessoDocumento(Base):
 
     usuario = relationship("Usuario", back_populates="processos")
     mensagens = relationship("Mensagem", back_populates="processo")
+    documentos = relationship("DocumentoProcesso", back_populates="processo", cascade="all, delete-orphan")
+
+
+class DocumentoProcesso(Base):
+    """Documento que acompanha o requerimento (ex.: certidões marcadas no Anexo III),
+    enviado junto com o documento assinado."""
+
+    __tablename__ = "documentos_processo"
+
+    id = Column(Integer, primary_key=True, index=True)
+    processo_id = Column(Integer, ForeignKey("processos_documentos.id"), nullable=False)
+    codigo = Column(String(100), nullable=False)
+    descricao = Column(String(500), nullable=False)
+    nome_original = Column(String(255), nullable=False)
+    caminho_storage = Column(String(500), nullable=False)
+    tamanho_bytes = Column(BigInteger, nullable=False)
+    tipo_mime = Column(String(100), nullable=False)
+    data_envio = Column(DateTime, server_default=func.now())
+
+    processo = relationship("ProcessoDocumento", back_populates="documentos")
 
 
 class Mensagem(Base):

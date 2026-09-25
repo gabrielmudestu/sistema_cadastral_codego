@@ -42,7 +42,8 @@
         <h2 class="card__title">Envio do documento assinado</h2>
         <p class="card__desc">
           Informe o protocolo do processo e anexe o PDF já assinado (digitalmente ou
-          impresso, assinado e digitalizado). Depois do envio, o sistema valida o
+          impresso, assinado e digitalizado) e, quando o requerimento pedir, os
+          documentos que o acompanham. Depois do envio, o sistema valida o
           recebimento e libera a emissão do recibo eletrônico.
         </p>
       </div>
@@ -71,6 +72,15 @@
             <p class="file-drop__selected" id="arquivo-selecionado" hidden></p>
           </div>
           <p class="field__error" data-error-for="arquivo"></p>
+        </div>
+
+        <!-- Preenchido quando o protocolo exige documentos (ex.: os marcados no Anexo III) -->
+        <div id="documentos-requerimento" hidden>
+          <h3 class="section-title">Documentos que acompanham o requerimento</h3>
+          <p class="section-desc">
+            Anexe cada documento marcado no formulário. PDF, PNG ou JPG, até 10MB cada.
+          </p>
+          <div id="documentos-lista"></div>
         </div>
 
         <div class="field">
