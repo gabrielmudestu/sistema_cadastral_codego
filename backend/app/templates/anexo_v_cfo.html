@@ -17,8 +17,10 @@
 
     @page {
       size: A4 landscape;
-      /* A tabela do modelo começa em (126.1pt, 126.4pt) e tem 589.6pt de largura. */
-      margin: 126.4pt 126.1pt 18pt;
+      /* A tabela começa em (126.1pt, 75pt), logo abaixo do cabeçalho (no modelo ela
+         fica em 126.4pt, abaixo do título "MODELO DO CRONOGRAMA", que não usamos),
+         e tem 589.6pt de largura, como no modelo. */
+      margin: 75pt 126.1pt 18pt;
     }
     body {
       margin: 0;
@@ -32,14 +34,14 @@
     .cab-logo {
       position: fixed;
       left: -84.6pt;   /* 41.5pt na página */
-      top: -100.1pt;   /* 26.3pt na página */
+      top: -48.7pt;    /* 26.3pt na página */
       width: 69.7pt;
       height: 32.2pt;
     }
     .cab-linha {
       position: fixed;
       left: -8.2pt;    /* 117.9pt na página */
-      top: -84.35pt;   /* 42.3pt na página */
+      top: -32.95pt;   /* 42.3pt na página */
       width: 400.8pt;
       /* Azul do Regulamento com transparência: sai #9396b4 sobre o branco. */
       border-top: 0.5pt solid #9396b4;
@@ -47,7 +49,7 @@
     .cab-texto {
       position: fixed;
       left: 417.4pt;   /* 543.5pt na página */
-      top: -88.9pt;
+      top: -37.5pt;    /* 37.5pt na página */
       font-family: "Lato", sans-serif;
       font-weight: 300;
       font-size: 6pt;
@@ -59,7 +61,7 @@
     .cab-pagina {
       position: fixed;
       left: 654.8pt;   /* 780.9pt na página */
-      top: -92.3pt;    /* 34.1pt na página */
+      top: -40.9pt;    /* 34.1pt na página */
       width: 18.3pt;
       height: 14.2pt;
       background: #237570;
