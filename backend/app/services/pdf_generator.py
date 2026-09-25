@@ -264,11 +264,12 @@ def gerar_pdf_anexo_v_declaracao_uso(dados: AnexoVDeclaracaoUsoCreate, protocolo
 
 
 # Medidas da tabela do "Modelo do Cronograma" do Regulamento (em pt): largura
-# total, coluna de serviços e quantidade de meses por tabela (3 trimestres,
-# como no modelo). Cronogramas mais longos continuam em novas tabelas.
+# total, coluna de serviços e quantidade de meses por tabela (4 trimestres, para
+# uma obra de até 1 ano caber numa tabela só). Cronogramas mais longos
+# continuam em novas tabelas.
 LARGURA_TABELA_CFO = 589.6
 LARGURA_COLUNA_SERVICO_CFO = 122.3
-MESES_POR_BLOCO_CFO = 9
+MESES_POR_BLOCO_CFO = 12
 
 
 
