@@ -52,6 +52,23 @@ body {
   width: auto;
 }
 
+/* Brasão clicável: volta para a tela inicial */
+.letterhead__home {
+  display: flex;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+
+.letterhead__home:hover {
+  opacity: 0.8;
+}
+
+.letterhead__home:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
 .letterhead__org {
   margin: 0 0 2px;
   font-size: 12px;
