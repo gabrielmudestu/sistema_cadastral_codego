@@ -191,11 +191,12 @@
     .protocolo {
       position: absolute;
       right: 36pt;
-      bottom: 16pt;
-      font-family: "Lato", sans-serif;
-      font-weight: 300;
-      font-size: 6pt;
-      color: #888888;
+      /* Medido do topo: com o padding-top da .pagina, "bottom" cairia fora da folha. */
+      top: 570pt;
+      font-family: "Regulamento", sans-serif;
+      font-weight: 700;
+      font-size: 9pt;
+      color: #1a1a1a;
     }
   </style>
 </head>
@@ -206,7 +207,7 @@
   <div class="cab-linha"></div>
   <div class="cab-texto">REGULAMENTO DE ALIENAÇÃO DE ÁREAS • 2026</div>
   <div class="cab-pagina">{{ numero_pagina }}</div>
-  <div class="protocolo">Protocolo interno: {{ protocolo }}</div>
+  <div class="protocolo">Protocolo: {{ protocolo }}</div>
   {% endmacro %}
 
   <div class="pagina" style="padding-top: 77.4pt;">

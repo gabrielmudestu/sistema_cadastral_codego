@@ -29,9 +29,22 @@ from app.services.pdf_generator import (
     gerar_pdf_anexo_ix,
     gerar_pdf_anexo_vi_evtf,
 )
+from app.services.email_service import enviar_email_protocolo
 from app.services.recaptcha import verificar_recaptcha
 
 router = APIRouter()
+
+
+def _enviar_protocolo(email: str | None, nome_empresarial: str, nome_documento: str, protocolo: str, caminho_pdf: str) -> bool:
+    """
+    Envia o protocolo (com o PDF gerado em anexo) para o e-mail informado no
+    formulário. Falha de e-mail não impede a geração do documento: só é
+    registrada no log e informada na resposta.
+    """
+    if not email:
+        return False
+    enviado, _erro = enviar_email_protocolo(email, nome_empresarial, nome_documento, protocolo, caminho_pdf)
+    return enviado
 
 
 @router.post("/anexo-viii-d", response_model=CadastroResponse, status_code=201)
@@ -76,10 +89,15 @@ def criar_cadastro_anexo_viii_d(payload: AnexoViiiDCreate, db: Session = Depends
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo VIII-D — Solicitações Diversas", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -125,10 +143,15 @@ def criar_cadastro_anexo_viii_a(payload: AnexoViiiACreate, db: Session = Depends
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo VIII-A — Alienação entre Particulares", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -174,10 +197,15 @@ def criar_cadastro_anexo_iii(payload: AnexoIiiCreate, db: Session = Depends(get_
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo III — Solicitação de Área", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -223,10 +251,15 @@ def criar_cadastro_anexo_v_declaracao_uso(payload: AnexoVDeclaracaoUsoCreate, db
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo V — Declaração de Uso de Água e Esgoto", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -309,10 +342,15 @@ def criar_cadastro_anexo_vii_mce(payload: AnexoViiMceCreate, db: Session = Depen
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.razao_social, "Anexo VII — Memorial de Caracterização do Empreendimento", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -359,10 +397,15 @@ def criar_cadastro_anexo_viii_b(payload: AnexoViiiBCreate, db: Session = Depends
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo VIII-B — Remembramento/Desmembramento", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -410,10 +453,15 @@ def criar_cadastro_anexo_viii_c(payload: AnexoViiiCCreate, db: Session = Depends
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo VIII-C — Alterações do Contrato Social", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -459,10 +507,15 @@ def criar_cadastro_anexo_ix(payload: AnexoIXCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.nome_empresarial, "Anexo IX — Atualização Cadastral Anual", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 
@@ -508,10 +561,15 @@ def criar_cadastro_anexo_vi_evtf(payload: AnexoVIEvtfCreate, db: Session = Depen
     db.commit()
     db.refresh(processo)
 
+    email_enviado = _enviar_protocolo(
+        payload.email, payload.razao_social, "Anexo VI — Viabilidade Técnica e Financeira (EVTF)", protocolo, caminho_pdf
+    )
+
     return CadastroResponse(
         usuario=usuario,
         processo=processo,
         pdf_download_url=f"/api/cadastro/{processo.id}/pdf",
+        email_protocolo_enviado=email_enviado,
     )
 
 

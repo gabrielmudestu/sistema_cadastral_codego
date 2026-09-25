@@ -101,6 +101,78 @@ def enviar_email_documento_assinado_outlook(
         return False, f"{type(erro).__name__}: {erro}"
 
 
+def enviar_email_protocolo_outlook(
+    destinatario_email: str,
+    nome_empresarial: str,
+    nome_documento: str,
+    protocolo: str,
+    caminho_pdf: str,
+) -> tuple[bool, str | None]:
+    """
+    Envia o e-mail com o número de protocolo e o PDF gerado em anexo via
+    Microsoft Graph API (OAuth2). Retorna (True, None) em sucesso, ou
+    (False, motivo) em caso de falha — nunca levanta exceção.
+    """
+    from app.services.email_service import montar_corpo_protocolo_html
+
+    access_token, erro_token = obter_access_token()
+    if access_token is None:
+        logger.warning("Não foi possível obter token do Outlook: %s", erro_token)
+        return False, erro_token
+
+    try:
+        with open(caminho_pdf, "rb") as f:
+            anexo_base64 = base64.b64encode(f.read()).decode("ascii")
+    except OSError as erro:
+        logger.warning("Não foi possível ler o PDF gerado para anexar: %s", erro)
+        anexo_base64 = None
+
+    corpo = {
+        "message": {
+            "subject": f"Seu protocolo {protocolo} — {nome_documento}",
+            "body": {
+                "contentType": "HTML",
+                "content": montar_corpo_protocolo_html(nome_empresarial, nome_documento, protocolo),
+            },
+            "toRecipients": [{"emailAddress": {"address": destinatario_email}}],
+        },
+        "saveToSentItems": True,
+    }
+
+    if anexo_base64:
+        corpo["message"]["attachments"] = [
+            {
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                "name": f"{protocolo}.pdf",
+                "contentType": "application/pdf",
+                "contentBytes": anexo_base64,
+            }
+        ]
+
+    try:
+        resposta = requests.post(
+            GRAPH_SEND_MAIL_URL,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
+            json=corpo,
+            timeout=20,
+        )
+        if resposta.status_code == 202:
+            logger.info(
+                "E-mail de protocolo (Outlook/Graph) enviado para %s (protocolo %s).", destinatario_email, protocolo
+            )
+            return True, None
+
+        motivo = f"HTTP {resposta.status_code}: {resposta.text[:300]}"
+        logger.warning("Falha ao enviar e-mail de protocolo via Graph: %s", motivo)
+        return False, motivo
+    except requests.RequestException as erro:
+        logger.exception("Falha de rede ao enviar e-mail de protocolo via Graph")
+        return False, f"{type(erro).__name__}: {erro}"
+
+
 def _montar_corpo_mensagem_html(remetente_nome: str, assunto: str, conteudo: str, protocolo: str | None) -> str:
     linha_protocolo = (
         f'<p style="font-family: monospace; background: #f2f2f2; padding: 8px 12px; '

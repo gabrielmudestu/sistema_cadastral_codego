@@ -33,3 +33,5 @@ class CadastroResponse(BaseModel):
     usuario: UsuarioOut | None
     processo: ProcessoOut
     pdf_download_url: str
+    # Se o protocolo foi enviado para o e-mail informado no formulário (None quando o anexo não pede e-mail).
+    email_protocolo_enviado: bool | None = None

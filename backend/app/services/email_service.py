@@ -61,6 +61,74 @@ def enviar_email_nova_mensagem(
     )
 
 
+def enviar_email_protocolo(
+    destinatario_email: str,
+    nome_empresarial: str,
+    nome_documento: str,
+    protocolo: str,
+    caminho_pdf: str,
+) -> tuple[bool, str | None]:
+    """
+    Envia para quem preencheu o formulário o número de protocolo do processo
+    recém-aberto, com o PDF gerado (ainda não assinado) em anexo — assim a
+    pessoa não perde o protocolo se fechar a tela sem anotá-lo. Escolhe a
+    implementação conforme settings.email_provider ("smtp" ou "outlook_graph").
+    Retorna (True, None) se o envio foi bem-sucedido, ou (False, mensagem_de_erro)
+    caso contrário — nunca levanta exceção, já que falha de e-mail não deve
+    impedir a geração do documento.
+    """
+    if settings.email_provider == "outlook_graph":
+        from app.services.outlook_email_service import enviar_email_protocolo_outlook
+
+        return enviar_email_protocolo_outlook(
+            destinatario_email, nome_empresarial, nome_documento, protocolo, caminho_pdf
+        )
+
+    return _enviar_protocolo_via_smtp(destinatario_email, nome_empresarial, nome_documento, protocolo, caminho_pdf)
+
+
+def montar_corpo_protocolo_texto(nome_empresarial: str, nome_documento: str, protocolo: str) -> str:
+    return (
+        f"Olá,\n\n"
+        f"Recebemos o preenchimento do documento \"{nome_documento}\" referente a "
+        f"{nome_empresarial}.\n\n"
+        f"Seu número de protocolo é: {protocolo}\n\n"
+        f"Guarde este número: ele é necessário para enviar o documento assinado, "
+        f"consultar o recibo eletrônico e enviar mensagens sobre este processo.\n\n"
+        f"Próximo passo: assine o documento em anexo e envie-o no Sistema Cadastral "
+        f"CODEGO, na opção \"Enviar documento assinado\" da página inicial, "
+        f"informando o protocolo acima.\n\n"
+        f"Atenciosamente,\n"
+        f"Companhia de Desenvolvimento Econômico de Goiás"
+    )
+
+
+def montar_corpo_protocolo_html(nome_empresarial: str, nome_documento: str, protocolo: str) -> str:
+    return f"""
+    <div style="font-family: Arial, sans-serif; color: #1a1a1a; font-size: 14px; line-height: 1.6;">
+      <p>Olá,</p>
+      <p>
+        Recebemos o preenchimento do documento <strong>{nome_documento}</strong>
+        referente a <strong>{nome_empresarial}</strong>.
+      </p>
+      <p>Seu número de protocolo é:</p>
+      <p style="font-family: monospace; font-size: 20px; background: #f2f2f2; padding: 10px 16px; display: inline-block;">
+        <strong>{protocolo}</strong>
+      </p>
+      <p>
+        <strong>Guarde este número:</strong> ele é necessário para enviar o documento
+        assinado, consultar o recibo eletrônico e enviar mensagens sobre este processo.
+      </p>
+      <p>
+        <strong>Próximo passo:</strong> assine o documento em anexo e envie-o no
+        <strong>Sistema Cadastral CODEGO</strong>, na opção "Enviar documento assinado"
+        da página inicial, informando o protocolo acima.
+      </p>
+      <p>Atenciosamente,<br>Companhia de Desenvolvimento Econômico de Goiás</p>
+    </div>
+    """
+
+
 def _montar_corpo_texto(nome_empresarial: str, protocolo: str) -> str:
     return (
         f"Olá,\n\n"
@@ -184,6 +252,65 @@ def _enviar_via_smtp(
         return True, None
     except Exception as erro:  # noqa: BLE001 — falha de e-mail não pode derrubar o upload
         logger.exception("Falha ao enviar e-mail de confirmação")
+        return False, f"{type(erro).__name__}: {erro}"
+
+
+def _enviar_protocolo_via_smtp(
+    destinatario_email: str,
+    nome_empresarial: str,
+    nome_documento: str,
+    protocolo: str,
+    caminho_pdf: str,
+) -> tuple[bool, str | None]:
+    """
+    Envia o e-mail com o número de protocolo e o PDF gerado em anexo. Retorna
+    (True, None) se o envio foi bem-sucedido, ou (False, mensagem_de_erro) caso
+    contrário — nunca levanta exceção.
+    """
+    if not settings.smtp_enabled:
+        motivo = "Envio de e-mail desabilitado (SMTP_ENABLED=false)."
+        logger.info(motivo)
+        return False, motivo
+
+    if not settings.smtp_user or not settings.smtp_password:
+        motivo = "SMTP_USER/SMTP_PASSWORD não configurados."
+        logger.warning(motivo)
+        return False, motivo
+
+    remetente = settings.smtp_from_email or settings.smtp_user
+
+    mensagem = MIMEMultipart("mixed")
+    mensagem["Subject"] = f"Seu protocolo {protocolo} — {nome_documento}"
+    mensagem["From"] = formataddr((settings.smtp_from_name, remetente))
+    mensagem["To"] = destinatario_email
+
+    corpo_alternativo = MIMEMultipart("alternative")
+    corpo_alternativo.attach(
+        MIMEText(montar_corpo_protocolo_texto(nome_empresarial, nome_documento, protocolo), "plain", "utf-8")
+    )
+    corpo_alternativo.attach(
+        MIMEText(montar_corpo_protocolo_html(nome_empresarial, nome_documento, protocolo), "html", "utf-8")
+    )
+    mensagem.attach(corpo_alternativo)
+
+    try:
+        with open(caminho_pdf, "rb") as f:
+            anexo = MIMEApplication(f.read(), _subtype="pdf")
+            anexo.add_header("Content-Disposition", "attachment", filename=f"{protocolo}.pdf")
+            mensagem.attach(anexo)
+    except OSError as erro:
+        logger.warning("Não foi possível anexar o PDF gerado ao e-mail: %s", erro)
+
+    try:
+        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as servidor:
+            if settings.smtp_use_tls:
+                servidor.starttls()
+            servidor.login(settings.smtp_user, settings.smtp_password)
+            servidor.sendmail(remetente, [destinatario_email], mensagem.as_string())
+        logger.info("E-mail de protocolo enviado para %s (protocolo %s).", destinatario_email, protocolo)
+        return True, None
+    except Exception as erro:  # noqa: BLE001 — falha de e-mail não pode impedir a geração do documento
+        logger.exception("Falha ao enviar e-mail de protocolo")
         return False, f"{type(erro).__name__}: {erro}"
 
 
