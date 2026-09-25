@@ -3,11 +3,20 @@ import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import formataddr
+from email.utils import formataddr, formatdate, make_msgid
 
 from app.config import settings
 
 logger = logging.getLogger("codego.email")
+
+
+def _adicionar_cabecalhos_padrao(mensagem: MIMEMultipart, remetente: str) -> None:
+    """
+    Date e Message-ID: o smtplib não os adiciona sozinho, e e-mail sem eles
+    é tratado como suspeito pelos filtros de spam (Gmail, Outlook).
+    """
+    mensagem["Date"] = formatdate(localtime=True)
+    mensagem["Message-ID"] = make_msgid(domain=remetente.split("@")[-1])
 
 
 def enviar_email_documento_assinado(
@@ -247,6 +256,7 @@ def _enviar_via_smtp(
     mensagem["Subject"] = f"Documento assinado recebido — Protocolo {protocolo}"
     mensagem["From"] = formataddr((settings.smtp_from_name, remetente))
     mensagem["To"] = destinatario_email
+    _adicionar_cabecalhos_padrao(mensagem, remetente)
 
     corpo_alternativo = MIMEMultipart("alternative")
     corpo_alternativo.attach(MIMEText(_montar_corpo_texto(nome_empresarial, protocolo, documentos_recebidos), "plain", "utf-8"))
@@ -304,6 +314,7 @@ def _enviar_protocolo_via_smtp(
     mensagem["Subject"] = f"Seu protocolo {protocolo} — {nome_documento}"
     mensagem["From"] = formataddr((settings.smtp_from_name, remetente))
     mensagem["To"] = destinatario_email
+    _adicionar_cabecalhos_padrao(mensagem, remetente)
 
     corpo_alternativo = MIMEMultipart("alternative")
     corpo_alternativo.attach(
@@ -365,6 +376,7 @@ def _enviar_mensagem_via_smtp(
     mensagem["Subject"] = f"Nova mensagem recebida{protocolo_assunto}: {assunto}"
     mensagem["From"] = formataddr((settings.smtp_from_name, remetente))
     mensagem["To"] = destinatario_email
+    _adicionar_cabecalhos_padrao(mensagem, remetente)
 
     corpo_alternativo = MIMEMultipart("alternative")
     corpo_alternativo.attach(
