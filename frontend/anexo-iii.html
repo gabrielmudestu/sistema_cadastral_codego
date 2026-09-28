@@ -108,9 +108,29 @@
 
           <div class="field">
             <label for="representante_rg">RG</label>
-            <input type="text" id="representante_rg" name="representante_rg" placeholder="0000000 SSP-UF" required>
+            <input type="text" id="representante_rg" name="representante_rg" placeholder="0000000" required>
             <p class="field__error" data-error-for="representante_rg"></p>
           </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="representante_rg_orgao">Órgão emissor do RG</label>
+            <select id="representante_rg_orgao" name="representante_rg_orgao" required></select>
+            <p class="field__error" data-error-for="representante_rg_orgao"></p>
+          </div>
+
+          <div class="field">
+            <label for="representante_rg_uf">UF do órgão emissor</label>
+            <select id="representante_rg_uf" name="representante_rg_uf" required></select>
+            <p class="field__error" data-error-for="representante_rg_uf"></p>
+          </div>
+        </div>
+
+        <div class="field" hidden>
+          <label for="representante_rg_orgao_outro">Qual órgão emissor?</label>
+          <input type="text" id="representante_rg_orgao_outro" name="representante_rg_orgao_outro" placeholder="Sigla, ex.: SSPDS">
+          <p class="field__error" data-error-for="representante_rg_orgao_outro"></p>
         </div>
 
         <div class="field">
@@ -234,6 +254,7 @@
 
   </div>
 
+  <script src="js/campo-rg.js"></script>
   <script src="js/anexo-iii.js"></script>
 </body>
 </html>

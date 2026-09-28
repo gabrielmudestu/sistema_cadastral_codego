@@ -212,15 +212,6 @@ form.addEventListener('change', (e) => { if (e.target.id) clearError(e.target.id
 // Nome de pessoa: só letras, espaço, apóstrofo, ponto e hífen.
 const formatarNomePessoa = (v) => v.replace(/[^\p{L}\s'.-]/gu, '').replace(/\s{2,}/g, ' ');
 
-// RG: letras (órgão emissor), números e separadores; no máximo 14 números
-// (o que passar disso, inclusive ao colar, é cortado).
-function formatarRg(v) {
-  let numeros = 0;
-  return [...v.replace(/[^\p{L}\d\s./-]/gu, '').toUpperCase()]
-    .filter((c) => !/\d/.test(c) || (numeros += 1) <= 14)
-    .join('');
-}
-
 // Número no formato brasileiro, formatado enquanto digita: "12500" -> "12.500",
 // com vírgula para decimais (até 2 casas).
 function formatarNumeroBr(v) {
@@ -245,6 +236,8 @@ const CAMPOS_TEXTO_OBRIGATORIOS = [
   ['endereco_correspondencia_empresa', 'Informe o endereço para correspondência da empresa.'],
   ['representante_nome', 'Informe o nome do representante.'],
   ['representante_rg', 'Informe o RG do representante.'],
+  ['representante_rg_orgao', 'Selecione o órgão emissor do RG.'],
+  ['representante_rg_uf', 'Selecione a UF do órgão emissor.'],
   ['representante_nome_mae', 'Informe o nome da mãe do representante.'],
   ['representante_endereco_correspondencia', 'Informe o endereço para correspondência do representante.'],
 ];
@@ -322,6 +315,8 @@ function validateForm() {
     clearError('cnaes');
   }
 
+  if (!validarOrgaoOutroRg()) valid = false;
+
   const rgValor = document.getElementById('representante_rg').value;
   if (rgValor.trim() && !rgValido(rgValor)) {
     setError('representante_rg', 'RG inválido: informe o número completo do documento (entre 5 e 14 números).');
@@ -393,7 +388,7 @@ form.addEventListener('submit', async (event) => {
     endereco_correspondencia_empresa: document.getElementById('endereco_correspondencia_empresa').value.trim(),
     representante_nome: document.getElementById('representante_nome').value.trim(),
     representante_cpf: document.getElementById('representante_cpf').value,
-    representante_rg: document.getElementById('representante_rg').value.trim(),
+    representante_rg: montarRg(),
     representante_nome_mae: document.getElementById('representante_nome_mae').value.trim(),
     email: document.getElementById('email').value.trim(),
     telefones: document.getElementById('telefones').value.trim(),
@@ -456,7 +451,7 @@ form.addEventListener('submit', async (event) => {
 // Restrições deste formulário
 restringirCampo(document.getElementById('representante_nome'), formatarNomePessoa);
 restringirCampo(document.getElementById('representante_nome_mae'), formatarNomePessoa);
-restringirCampo(document.getElementById('representante_rg'), formatarRg);
+restringirCampo(document.getElementById('representante_rg'), formatarNumeroRg);
 restringirCampo(document.getElementById('metragem_necessaria'), formatarNumeroBr);
 document.querySelectorAll('[data-cnae="numero"]').forEach((el) => restringirCampo(el, formatarCnae));
 // Telefones: números, parênteses, hífen, espaço e "/" entre números; até 3 números de 11 dígitos.

@@ -206,15 +206,6 @@ form.addEventListener('change', (e) => { if (e.target.id) clearError(e.target.id
 // Nome de pessoa: só letras, espaço, apóstrofo, ponto e hífen.
 const formatarNomePessoa = (v) => v.replace(/[^\p{L}\s'.-]/gu, '').replace(/\s{2,}/g, ' ');
 
-// RG: letras (órgão emissor), números e separadores; no máximo 14 números
-// (o que passar disso, inclusive ao colar, é cortado).
-function formatarRg(v) {
-  let numeros = 0;
-  return [...v.replace(/[^\p{L}\d\s./-]/gu, '').toUpperCase()]
-    .filter((c) => !/\d/.test(c) || (numeros += 1) <= 14)
-    .join('');
-}
-
 function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -225,6 +216,8 @@ const CAMPOS_TEXTO_OBRIGATORIOS = [
   ['endereco', 'Informe o endereço da empresa.'],
   ['representante_nome', 'Informe o nome do representante legal.'],
   ['representante_rg', 'Informe o RG do representante legal.'],
+  ['representante_rg_orgao', 'Selecione o órgão emissor do RG.'],
+  ['representante_rg_uf', 'Selecione a UF do órgão emissor.'],
   ['representante_endereco', 'Informe o endereço do representante legal.'],
   ['justificativa', 'Descreva a justificativa.'],
 ];
@@ -303,6 +296,8 @@ function validateForm() {
     clearError('representante_cpf');
   }
 
+  if (!validarOrgaoOutroRg()) valid = false;
+
   const rgValor = document.getElementById('representante_rg').value;
   if (rgValor.trim() && !rgValido(rgValor)) {
     setError('representante_rg', 'RG inválido: informe o número completo do documento (entre 5 e 14 números).');
@@ -363,7 +358,7 @@ form.addEventListener('submit', async (event) => {
     email: document.getElementById('email').value.trim(),
     representante_nome: document.getElementById('representante_nome').value.trim(),
     representante_estado_civil: document.getElementById('representante_estado_civil').value,
-    representante_rg: document.getElementById('representante_rg').value.trim(),
+    representante_rg: montarRg(),
     representante_cpf: document.getElementById('representante_cpf').value,
     representante_endereco: document.getElementById('representante_endereco').value.trim(),
     tipo_alteracao: tipoAlteracaoSelect.value,
@@ -425,4 +420,4 @@ form.addEventListener('submit', async (event) => {
 
 // Restrições deste formulário
 restringirCampo(document.getElementById('representante_nome'), formatarNomePessoa);
-restringirCampo(document.getElementById('representante_rg'), formatarRg);
+restringirCampo(document.getElementById('representante_rg'), formatarNumeroRg);
