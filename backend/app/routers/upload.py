@@ -156,7 +156,7 @@ async def enviar_documento_assinado(
             nome_empresarial=nome_empresarial,
             protocolo=processo.protocolo,
             caminho_pdf_assinado=caminho,
-            documentos_recebidos=documentos_recebidos,
+            documentos=[(doc.descricao, doc.caminho_storage) for doc in processo.documentos],
         )
     else:
         email_enviado, email_erro = False, "Nenhum e-mail de destino configurado (NOTIFICATION_EMAIL)."

@@ -1,5 +1,6 @@
 import base64
 import logging
+import mimetypes
 
 import requests
 
@@ -10,7 +11,12 @@ logger = logging.getLogger("codego.email.outlook")
 GRAPH_SEND_MAIL_URL = "https://graph.microsoft.com/v1.0/me/sendMail"
 
 
-def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
+def _montar_corpo_html(
+    nome_empresarial: str,
+    protocolo: str,
+    documentos_recebidos: list[str] | None = None,
+    documentos_anexados: bool = True,
+) -> str:
     from app.services.email_service import _montar_lista_documentos_html
 
     return f"""
@@ -23,7 +29,7 @@ def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebid
       <p style="font-family: monospace; background: #f2f2f2; padding: 8px 12px; display: inline-block;">
         Protocolo: <strong>{protocolo}</strong>
       </p>
-      {_montar_lista_documentos_html(documentos_recebidos)}
+      {_montar_lista_documentos_html(documentos_recebidos, documentos_anexados)}
       <p>
         Este e-mail confirma que o arquivo foi recebido e validado pelo
         <strong>Sistema Cadastral CODEGO</strong>. Em breve o recibo eletrônico
@@ -39,47 +45,67 @@ def enviar_email_documento_assinado_outlook(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
-    documentos_recebidos: list[str] | None = None,
+    documentos: list[tuple[str, str]] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia o e-mail de confirmação via Microsoft Graph API (OAuth2), usando o
     token obtido a partir do login único feito com scripts/setup_outlook_auth.py.
-    Retorna (True, None) em sucesso, ou (False, motivo) em caso de falha — nunca
-    levanta exceção.
+    Os documentos do requerimento (lista de (descrição, caminho)) vão anexados
+    se couberem no limite do Graph; senão, só a lista. Retorna (True, None) em
+    sucesso, ou (False, motivo) em caso de falha — nunca levanta exceção.
     """
+    from app.services.email_service import (
+        LIMITE_ANEXOS_GRAPH_BYTES,
+        documentos_cabem_no_email,
+        nome_anexo_documento,
+    )
+
     access_token, erro_token = obter_access_token()
     if access_token is None:
         logger.warning("Não foi possível obter token do Outlook: %s", erro_token)
         return False, erro_token
 
-    try:
-        with open(caminho_pdf_assinado, "rb") as f:
-            anexo_base64 = base64.b64encode(f.read()).decode("ascii")
-    except OSError as erro:
-        logger.warning("Não foi possível ler o PDF assinado para anexar: %s", erro)
-        anexo_base64 = None
+    documentos = documentos or []
+    anexar_documentos = documentos_cabem_no_email(caminho_pdf_assinado, documentos, LIMITE_ANEXOS_GRAPH_BYTES)
+
+    arquivos = [(caminho_pdf_assinado, f"{protocolo}_assinado.pdf")]
+    if anexar_documentos:
+        arquivos += [(caminho, nome_anexo_documento(protocolo, caminho)) for _descricao, caminho in documentos]
+
+    anexos = []
+    for caminho, nome_arquivo in arquivos:
+        try:
+            with open(caminho, "rb") as f:
+                anexos.append(
+                    {
+                        "@odata.type": "#microsoft.graph.fileAttachment",
+                        "name": nome_arquivo,
+                        "contentType": mimetypes.guess_type(nome_arquivo)[0] or "application/octet-stream",
+                        "contentBytes": base64.b64encode(f.read()).decode("ascii"),
+                    }
+                )
+        except OSError as erro:
+            logger.warning("Não foi possível ler %s para anexar: %s", nome_arquivo, erro)
 
     corpo = {
         "message": {
             "subject": f"Documento assinado recebido — Protocolo {protocolo}",
             "body": {
                 "contentType": "HTML",
-                "content": _montar_corpo_html(nome_empresarial, protocolo, documentos_recebidos),
+                "content": _montar_corpo_html(
+                    nome_empresarial,
+                    protocolo,
+                    [descricao for descricao, _caminho in documentos],
+                    anexar_documentos,
+                ),
             },
             "toRecipients": [{"emailAddress": {"address": destinatario_email}}],
         },
         "saveToSentItems": True,
     }
 
-    if anexo_base64:
-        corpo["message"]["attachments"] = [
-            {
-                "@odata.type": "#microsoft.graph.fileAttachment",
-                "name": f"{protocolo}_assinado.pdf",
-                "contentType": "application/pdf",
-                "contentBytes": anexo_base64,
-            }
-        ]
+    if anexos:
+        corpo["message"]["attachments"] = anexos
 
     try:
         resposta = requests.post(

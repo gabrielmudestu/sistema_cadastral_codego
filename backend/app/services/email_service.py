@@ -1,4 +1,5 @@
 import logging
+import os
 import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -24,27 +25,51 @@ def enviar_email_documento_assinado(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
-    documentos_recebidos: list[str] | None = None,
+    documentos: list[tuple[str, str]] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia um e-mail de confirmação de recebimento do documento assinado, com o
-    PDF assinado em anexo e a lista dos documentos que acompanham o
-    requerimento (só os nomes; os arquivos ficam no sistema). Escolhe a implementação conforme
-    settings.email_provider ("smtp" ou "outlook_graph"). Retorna (True, None)
-    se o envio foi bem-sucedido, ou (False, mensagem_de_erro) caso contrário —
-    nunca levanta exceção, já que falha de e-mail não deve derrubar o upload,
-    que já foi salvo com sucesso.
+    PDF assinado em anexo e os documentos que acompanham o requerimento
+    (`documentos`: lista de (descrição, caminho do arquivo)). Os documentos vão
+    anexados quando cabem no limite de tamanho do e-mail; senão, o e-mail traz
+    só a lista, avisando que os arquivos estão guardados no sistema.
+    Escolhe a implementação conforme settings.email_provider ("smtp" ou
+    "outlook_graph"). Retorna (True, None) se o envio foi bem-sucedido, ou
+    (False, mensagem_de_erro) caso contrário — nunca levanta exceção, já que
+    falha de e-mail não deve derrubar o upload, que já foi salvo com sucesso.
     """
     if settings.email_provider == "outlook_graph":
         from app.services.outlook_email_service import enviar_email_documento_assinado_outlook
 
         return enviar_email_documento_assinado_outlook(
-            destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos_recebidos
+            destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos
         )
 
-    return _enviar_via_smtp(
-        destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos_recebidos
-    )
+    return _enviar_via_smtp(destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos)
+
+
+# Limite do total de arquivos anexados (antes da codificação base64, que os
+# aumenta em ~33%), para o e-mail ficar abaixo dos 25MB aceitos pelo Gmail e
+# pelo Outlook.
+LIMITE_ANEXOS_SMTP_BYTES = 18 * 1024 * 1024
+# O sendMail do Microsoft Graph aceita no máximo ~4MB por requisição.
+LIMITE_ANEXOS_GRAPH_BYTES = 3 * 1024 * 1024
+
+
+def documentos_cabem_no_email(caminho_pdf_assinado: str, documentos: list[tuple[str, str]], limite: int) -> bool:
+    """Se o PDF assinado mais os documentos do requerimento cabem juntos no e-mail."""
+    total = 0
+    for caminho in [caminho_pdf_assinado, *(caminho for _descricao, caminho in documentos)]:
+        try:
+            total += os.path.getsize(caminho)
+        except OSError:
+            pass
+    return total <= limite
+
+
+def nome_anexo_documento(protocolo: str, caminho: str) -> str:
+    """Nome do arquivo no e-mail, ex.: REC-2026-12345_contrato_social.pdf."""
+    return f"{protocolo}_{os.path.basename(caminho)}"
 
 
 def enviar_email_nova_mensagem(
@@ -142,9 +167,24 @@ def montar_corpo_protocolo_html(nome_empresarial: str, nome_documento: str, prot
     """
 
 
-def _montar_corpo_texto(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
+def _titulo_lista_documentos(documentos_anexados: bool) -> str:
+    if documentos_anexados:
+        return "Documentos que acompanham o requerimento (em anexo):"
+    return (
+        "Documentos que acompanham o requerimento (não anexados a este e-mail por "
+        "passarem do limite de tamanho; os arquivos estão guardados no sistema):"
+    )
+
+
+def _montar_corpo_texto(
+    nome_empresarial: str,
+    protocolo: str,
+    documentos_recebidos: list[str] | None = None,
+    documentos_anexados: bool = True,
+) -> str:
     lista_documentos = (
-        "Documentos anexados ao requerimento:\n"
+        _titulo_lista_documentos(documentos_anexados)
+        + "\n"
         + "".join(f"- {descricao}\n" for descricao in documentos_recebidos)
         + "\n"
         if documentos_recebidos
@@ -164,14 +204,19 @@ def _montar_corpo_texto(nome_empresarial: str, protocolo: str, documentos_recebi
     )
 
 
-def _montar_lista_documentos_html(documentos_recebidos: list[str] | None) -> str:
+def _montar_lista_documentos_html(documentos_recebidos: list[str] | None, documentos_anexados: bool = True) -> str:
     if not documentos_recebidos:
         return ""
     itens = "".join(f"<li>{descricao}</li>" for descricao in documentos_recebidos)
-    return f"<p><strong>Documentos anexados ao requerimento:</strong></p><ul>{itens}</ul>"
+    return f"<p><strong>{_titulo_lista_documentos(documentos_anexados)}</strong></p><ul>{itens}</ul>"
 
 
-def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebidos: list[str] | None = None) -> str:
+def _montar_corpo_html(
+    nome_empresarial: str,
+    protocolo: str,
+    documentos_recebidos: list[str] | None = None,
+    documentos_anexados: bool = True,
+) -> str:
     return f"""
     <div style="font-family: Arial, sans-serif; color: #1a1a1a; font-size: 14px; line-height: 1.6;">
       <p>Olá,</p>
@@ -182,7 +227,7 @@ def _montar_corpo_html(nome_empresarial: str, protocolo: str, documentos_recebid
       <p style="font-family: monospace; background: #f2f2f2; padding: 8px 12px; display: inline-block;">
         Protocolo: <strong>{protocolo}</strong>
       </p>
-      {_montar_lista_documentos_html(documentos_recebidos)}
+      {_montar_lista_documentos_html(documentos_recebidos, documentos_anexados)}
       <p>
         Este e-mail confirma que o arquivo foi recebido e validado pelo
         <strong>Sistema Cadastral CODEGO</strong>. Em breve o recibo eletrônico
@@ -232,11 +277,11 @@ def _enviar_via_smtp(
     nome_empresarial: str,
     protocolo: str,
     caminho_pdf_assinado: str,
-    documentos_recebidos: list[str] | None = None,
+    documentos: list[tuple[str, str]] | None = None,
 ) -> tuple[bool, str | None]:
     """
     Envia um e-mail de confirmação de recebimento do documento assinado, com o
-    PDF assinado em anexo. Retorna (True, None) se o envio foi bem-sucedido, ou
+    PDF assinado e (se couberem) os documentos do requerimento em anexo. Retorna (True, None) se o envio foi bem-sucedido, ou
     (False, mensagem_de_erro) caso contrário — nunca levanta exceção, já que
     falha de e-mail não deve derrubar o upload, que já foi salvo com sucesso.
     """
@@ -258,20 +303,40 @@ def _enviar_via_smtp(
     mensagem["To"] = destinatario_email
     _adicionar_cabecalhos_padrao(mensagem, remetente)
 
+    documentos = documentos or []
+    documentos_recebidos = [descricao for descricao, _caminho in documentos]
+    anexar_documentos = documentos_cabem_no_email(caminho_pdf_assinado, documentos, LIMITE_ANEXOS_SMTP_BYTES)
+
     corpo_alternativo = MIMEMultipart("alternative")
-    corpo_alternativo.attach(MIMEText(_montar_corpo_texto(nome_empresarial, protocolo, documentos_recebidos), "plain", "utf-8"))
-    corpo_alternativo.attach(MIMEText(_montar_corpo_html(nome_empresarial, protocolo, documentos_recebidos), "html", "utf-8"))
+    corpo_alternativo.attach(
+        MIMEText(
+            _montar_corpo_texto(nome_empresarial, protocolo, documentos_recebidos, anexar_documentos),
+            "plain",
+            "utf-8",
+        )
+    )
+    corpo_alternativo.attach(
+        MIMEText(
+            _montar_corpo_html(nome_empresarial, protocolo, documentos_recebidos, anexar_documentos),
+            "html",
+            "utf-8",
+        )
+    )
     mensagem.attach(corpo_alternativo)
 
-    try:
-        with open(caminho_pdf_assinado, "rb") as f:
-            anexo = MIMEApplication(f.read(), _subtype="pdf")
-            anexo.add_header(
-                "Content-Disposition", "attachment", filename=f"{protocolo}_assinado.pdf"
-            )
-            mensagem.attach(anexo)
-    except OSError as erro:
-        logger.warning("Não foi possível anexar o PDF assinado ao e-mail: %s", erro)
+    arquivos = [(caminho_pdf_assinado, f"{protocolo}_assinado.pdf")]
+    if anexar_documentos:
+        arquivos += [(caminho, nome_anexo_documento(protocolo, caminho)) for _descricao, caminho in documentos]
+
+    for caminho, nome_arquivo in arquivos:
+        try:
+            with open(caminho, "rb") as f:
+                subtipo = "pdf" if caminho.lower().endswith(".pdf") else "octet-stream"
+                anexo = MIMEApplication(f.read(), _subtype=subtipo)
+                anexo.add_header("Content-Disposition", "attachment", filename=nome_arquivo)
+                mensagem.attach(anexo)
+        except OSError as erro:
+            logger.warning("Não foi possível anexar %s ao e-mail: %s", nome_arquivo, erro)
 
     try:
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as servidor:
