@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     smtp_from_name: str = "Sistema Cadastral CODEGO"
     smtp_enabled: bool = False
 
+    # Brevo pela API web (https) — usado quando email_provider="brevo_api".
+    # Necessário em hospedagens que bloqueiam as portas de SMTP (ex.: Render grátis).
+    brevo_api_key: str = ""
+    brevo_sender_email: str = ""  # remetente verificado no Brevo; se vazio, usa smtp_from_email
+
     # Outlook via Microsoft Graph (OAuth2) — usado quando email_provider="outlook_graph"
     outlook_client_id: str = ""
     outlook_tenant: str = "consumers"  # "consumers" para contas pessoais (@outlook.com, @hotmail.com)

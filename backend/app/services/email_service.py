@@ -33,16 +33,34 @@ def enviar_email_documento_assinado(
     (`documentos`: lista de (descrição, caminho do arquivo)). Os documentos vão
     anexados quando cabem no limite de tamanho do e-mail; senão, o e-mail traz
     só a lista, avisando que os arquivos estão guardados no sistema.
-    Escolhe a implementação conforme settings.email_provider ("smtp" ou
-    "outlook_graph"). Retorna (True, None) se o envio foi bem-sucedido, ou
-    (False, mensagem_de_erro) caso contrário — nunca levanta exceção, já que
-    falha de e-mail não deve derrubar o upload, que já foi salvo com sucesso.
+    Escolhe a implementação conforme settings.email_provider ("smtp",
+    "outlook_graph" ou "brevo_api"). Retorna (True, None) se o envio foi
+    bem-sucedido, ou (False, mensagem_de_erro) caso contrário — nunca levanta
+    exceção, já que falha de e-mail não deve derrubar o upload, que já foi
+    salvo com sucesso.
     """
     if settings.email_provider == "outlook_graph":
         from app.services.outlook_email_service import enviar_email_documento_assinado_outlook
 
         return enviar_email_documento_assinado_outlook(
             destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos
+        )
+
+    if settings.email_provider == "brevo_api":
+        from app.services.brevo_email_service import enviar_via_brevo
+
+        documentos = documentos or []
+        descricoes = [descricao for descricao, _caminho in documentos]
+        anexar = documentos_cabem_no_email(caminho_pdf_assinado, documentos, LIMITE_ANEXOS_BREVO_BYTES)
+        anexos = [(caminho_pdf_assinado, f"{protocolo}_assinado.pdf")]
+        if anexar:
+            anexos += [(caminho, nome_anexo_documento(protocolo, caminho)) for _descricao, caminho in documentos]
+        return enviar_via_brevo(
+            destinatario_email,
+            f"Documento assinado recebido — Protocolo {protocolo}",
+            _montar_corpo_html(nome_empresarial, protocolo, descricoes, anexar),
+            _montar_corpo_texto(nome_empresarial, protocolo, descricoes, anexar),
+            anexos,
         )
 
     return _enviar_via_smtp(destinatario_email, nome_empresarial, protocolo, caminho_pdf_assinado, documentos)
@@ -54,6 +72,8 @@ def enviar_email_documento_assinado(
 LIMITE_ANEXOS_SMTP_BYTES = 18 * 1024 * 1024
 # O sendMail do Microsoft Graph aceita no máximo ~4MB por requisição.
 LIMITE_ANEXOS_GRAPH_BYTES = 3 * 1024 * 1024
+# O Brevo aceita e-mails de até 20MB no total (já codificados em base64).
+LIMITE_ANEXOS_BREVO_BYTES = 14 * 1024 * 1024
 
 
 def documentos_cabem_no_email(caminho_pdf_assinado: str, documentos: list[tuple[str, str]], limite: int) -> bool:
@@ -94,6 +114,18 @@ def enviar_email_nova_mensagem(
             destinatario_email, remetente_nome, assunto, conteudo, protocolo, caminhos_anexos
         )
 
+    if settings.email_provider == "brevo_api":
+        from app.services.brevo_email_service import enviar_via_brevo
+
+        protocolo_assunto = f" — Protocolo {protocolo}" if protocolo else ""
+        return enviar_via_brevo(
+            destinatario_email,
+            f"Nova mensagem recebida{protocolo_assunto}: {assunto}",
+            _montar_corpo_mensagem_html(remetente_nome, assunto, conteudo, protocolo),
+            _montar_corpo_mensagem_texto(remetente_nome, assunto, conteudo, protocolo),
+            [(caminho, os.path.basename(caminho)) for caminho in caminhos_anexos],
+        )
+
     return _enviar_mensagem_via_smtp(
         destinatario_email, remetente_nome, assunto, conteudo, protocolo, caminhos_anexos
     )
@@ -120,6 +152,17 @@ def enviar_email_protocolo(
 
         return enviar_email_protocolo_outlook(
             destinatario_email, nome_empresarial, nome_documento, protocolo, caminho_pdf
+        )
+
+    if settings.email_provider == "brevo_api":
+        from app.services.brevo_email_service import enviar_via_brevo
+
+        return enviar_via_brevo(
+            destinatario_email,
+            f"Seu protocolo {protocolo} — {nome_documento}",
+            montar_corpo_protocolo_html(nome_empresarial, nome_documento, protocolo),
+            montar_corpo_protocolo_texto(nome_empresarial, nome_documento, protocolo),
+            [(caminho_pdf, f"{protocolo}.pdf")],
         )
 
     return _enviar_protocolo_via_smtp(destinatario_email, nome_empresarial, nome_documento, protocolo, caminho_pdf)
