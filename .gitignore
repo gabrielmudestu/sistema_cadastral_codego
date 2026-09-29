@@ -1,6 +1,8 @@
 # Ambiente
 .env
 *.env.local
+# Certificados (ex.: CA do banco no Aiven)
+*.pem
 
 # Python
 __pycache__/
