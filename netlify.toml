@@ -6,3 +6,7 @@
 [build]
   base = "frontend"
   publish = "."
+  # Só publica quando o push muda o site (pasta frontend/) ou este arquivo.
+  # Commits só de backend não geram deploy nem gastam créditos do Netlify.
+  # O comando roda dentro de frontend/ (a "base"); saída 0 = ignorar o build.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../netlify.toml"
