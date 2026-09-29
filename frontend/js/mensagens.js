@@ -1,4 +1,4 @@
-const API_BASE_URL = window.CODEGO_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = window.CODEGO_API_BASE_URL; // definido em js/config.js
 const MAX_ANEXO_SIZE_MB = 10;
 const EXTENSOES_ANEXO_PERMITIDAS = ['.pdf', '.png', '.jpg', '.jpeg'];
 
