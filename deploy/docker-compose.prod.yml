@@ -1,0 +1,70 @@
+# Produção na VM Windows da CODEGO — guia completo em deploy/README.md.
+# Não rodar direto: use .\deploy\subir.ps1, que passa o .env da raiz do projeto.
+#
+# Diferenças para o docker-compose.yml de desenvolvimento:
+# - O Caddy é a única porta de entrada (80/443): serve o site (pasta frontend/)
+#   e encaminha /api para o backend. Com um domínio, ele obtém e renova o
+#   certificado https sozinho (Let's Encrypt).
+# - Backend e banco não ficam expostos para fora da máquina.
+# - Backend sem --reload e com o código dentro da imagem (atualizar = subir.ps1).
+
+name: codego_prod
+
+services:
+  db:
+    image: mysql:8.4
+    restart: always
+    env_file:
+      - ../.env
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: always
+    env_file:
+      - ../.env
+    command:
+      - uvicorn
+      - app.main:app
+      - --host=0.0.0.0
+      - --port=8000
+      - --proxy-headers
+      - --forwarded-allow-ips=*
+    volumes:
+      - arquivos:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Sem domínio (teste na rede interna): ":80", só http.
+      # Com domínio (ex.: sistemacadastral.codego.com.br): https automático.
+      DOMINIO: ${DOMINIO:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend:/srv/frontend:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+  arquivos:
+  caddy_data:
+  caddy_config:

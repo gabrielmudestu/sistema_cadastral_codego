@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     protocol_prefix: str = "REC"
 
+    # Endereços do site que podem chamar a API, separados por vírgula ("*" = qualquer um)
+    cors_origins: str = "*"
+
     # E-mail fixo da empresa que recebe a cópia de TODOS os documentos assinados
     # (em vez do e-mail que a pessoa preencheu no cadastro)
     notification_email: str = ""

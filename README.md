@@ -109,25 +109,23 @@ conta Outlook, o sistema envia pela Microsoft Graph API com OAuth2:
 
 4. Reinicie o backend: `docker compose restart backend`
 
-## Deploy do front-end no Netlify
+## Publicação (produção)
 
-O `netlify.toml` na raiz já configura o Netlify para publicar a pasta
-`frontend/` (não precisa mover nenhum arquivo nem mexer nas configurações
-manuais do painel — funciona automaticamente com o site conectado ao GitHub).
+O caminho recomendado é a VM Windows da CODEGO, com site e API no mesmo
+endereço e https automático pelo Caddy. Passo a passo completo, incluindo o
+pedido ao TI, backup e atualização: **[deploy/README.md](deploy/README.md)**.
 
-**Importante:** o Netlify só hospeda o front-end (arquivos estáticos). O
-back-end (FastAPI) continua precisando rodar em outro lugar (seu Docker local,
-ou um serviço como Render/Railway/EC2). Depois de hospedar o back-end em algum
-endereço público, aponte o front-end pra ele definindo `window.CODEGO_API_BASE_URL`
-antes do `js/anexo-viii-d.js` carregar — por exemplo, adicionando isto no
-`<head>` de cada página HTML:
+O endereço da API usado pelas páginas fica em `frontend/js/config.js`:
+em desenvolvimento (site na porta 8080) é `http://<máquina>:8000`; publicado
+junto com a API (VM), é o próprio endereço do site.
 
-```html
-<script>window.CODEGO_API_BASE_URL = 'https://sua-api-em-producao.com';</script>
-```
+### Netlify (só o front-end)
 
-Sem isso, o front-end publicado no Netlify vai tentar falar com
-`http://localhost:8000` (o padrão), que não existe fora da sua máquina.
+O `netlify.toml` na raiz configura o Netlify para publicar a pasta
+`frontend/`, e só publica quando o push muda o front-end. O Netlify não roda
+o back-end: para usá-lo, preencha `API_PRODUCAO` em `frontend/js/config.js`
+com o endereço https do back-end publicado e inclua o endereço do site no
+`CORS_ORIGINS` do `.env` do back-end.
 
 ## Setup local
 

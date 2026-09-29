@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.database import Base, engine, wait_for_db
 from app.routers import cadastro, upload, recibo, mensagens, processos
 
@@ -25,7 +26,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ajustar para o domínio do front em produção
+    # CORS_ORIGINS no .env: "*" (padrão) ou os endereços do site separados por
+    # vírgula. Com o site e a API no mesmo endereço (deploy/ com Caddy), o CORS
+    # nem é usado; só importa se o site ficar em outro lugar (ex.: Netlify).
+    allow_origins=[origem.strip() for origem in settings.cors_origins.split(",") if origem.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
