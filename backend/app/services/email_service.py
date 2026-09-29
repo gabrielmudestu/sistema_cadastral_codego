@@ -233,15 +233,13 @@ def _montar_corpo_texto(
         if documentos_recebidos
         else ""
     )
-    return (
+        return (
         f"Olá,\n\n"
-        f"Confirmamos o recebimento do documento assinado referente ao processo de "
-        f"{nome_empresarial}.\n\n"
+        f"Este é um recibo eletrônico de sua solicitação. Em breve um analista da "
+        f"CODEGO entrará em contato disponibilizando o número do protocolo de seu "
+        f"Processo.\n\n"
         f"Protocolo: {protocolo}\n\n"
         f"{lista_documentos}"
-        f"Este e-mail confirma que o arquivo foi recebido e validado pelo Sistema "
-        f"Cadastral CODEGO. Em breve o recibo eletrônico deste processo estará "
-        f"disponível.\n\n"
         f"Atenciosamente,\n"
         f"Companhia de Desenvolvimento Econômico de Goiás"
     )
