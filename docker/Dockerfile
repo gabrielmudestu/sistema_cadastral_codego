@@ -20,6 +20,8 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
+# Site (usado quando SERVIR_FRONTEND=true, ex.: no Render; na VM quem serve é o Caddy)
+COPY frontend ./frontend
 
 EXPOSE 8000
 

@@ -2,8 +2,8 @@ import re
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
-from app.schemas.validacoes import cnpj_valido, formatar_numero_br, mes_atual, numero_br, telefone_valido
+from pydantic import BaseModel, EmailStr, ValidationInfo, field_validator, model_validator
+from app.schemas.validacoes import cnpj_valido, formatar_numero_br, mes_atual, numero_br, regerando_pdf, telefone_valido
 
 SimNao = Literal["Sim", "Não"]
 
@@ -505,12 +505,12 @@ class AnexoViiMceCreate(BaseModel):
 
     @field_validator("previsao_funcionamento")
     @classmethod
-    def valida_previsao_funcionamento(cls, v: str):
+    def valida_previsao_funcionamento(cls, v: str, info: ValidationInfo):
         if not (v or "").strip():
             return ""
         if not re.fullmatch(r"\d{4}-\d{2}", v) or not 1 <= int(v[5:]) <= 12:
             raise ValueError("Previsão para entrar em Funcionamento: use o formato AAAA-MM.")
-        if v < mes_atual():
+        if v < mes_atual() and not regerando_pdf(info):
             raise ValueError("A previsão para entrar em funcionamento não pode ser um mês que já passou.")
         return v
 

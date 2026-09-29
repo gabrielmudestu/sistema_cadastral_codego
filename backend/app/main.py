@@ -1,7 +1,9 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import Base, engine, wait_for_db
@@ -22,6 +24,10 @@ app = FastAPI(
     title="Sistema Cadastral CODEGO",
     description="API para cadastro, geração de documentos, upload assinado, recibo eletrônico e mensagens.",
     version="0.1.0",
+    # Documentação interativa (/docs) só fora de produção.
+    docs_url=None if settings.app_env == "production" else "/docs",
+    redoc_url=None if settings.app_env == "production" else "/redoc",
+    openapi_url=None if settings.app_env == "production" else "/openapi.json",
 )
 
 app.add_middleware(
@@ -46,3 +52,8 @@ app.include_router(upload.router, prefix="/api/cadastro", tags=["Upload"])
 app.include_router(recibo.router, prefix="/api/recibo", tags=["Recibo"])
 app.include_router(mensagens.router, prefix="/api/mensagens", tags=["Mensagens"])
 app.include_router(processos.router, prefix="/api/processos", tags=["Processos"])
+
+# Site servido pelo próprio backend (SERVIR_FRONTEND=true, ex.: no Render). Fica
+# por último para as rotas da API e o /health terem prioridade.
+if settings.servir_frontend and os.path.isdir(settings.frontend_dir):
+    app.mount("/", StaticFiles(directory=settings.frontend_dir, html=True), name="frontend")

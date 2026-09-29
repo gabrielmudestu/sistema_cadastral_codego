@@ -1,0 +1,66 @@
+# Blueprint do Render (plano grátis) — passo a passo em deploy/RENDER.md.
+# Um serviço só: o backend serve a API e o site (SERVIR_FRONTEND=true), no
+# mesmo endereço https://<nome>.onrender.com.
+#
+# Limitações do plano grátis (ver deploy/RENDER.md):
+# - "dorme" após 15 min sem acesso (o 1º acesso depois disso leva ~1 min);
+# - o disco é apagado a cada reinício: PDFs gerados são recriados a partir do
+#   banco quando alguém pede o download; assinados e documentos enviados ficam
+#   nos e-mails enviados à CODEGO (NOTIFICATION_EMAIL);
+# - bloqueia SMTP: o e-mail sai pela API do Brevo (EMAIL_PROVIDER=brevo_api);
+# - não tem MySQL: o banco fica num serviço externo (ex.: Aiven, grátis).
+
+services:
+  - type: web
+    name: sistema-cadastral-codego
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./docker/Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=*
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: APP_ENV
+        value: production
+      - key: APP_SECRET_KEY
+        generateValue: true
+      - key: SERVIR_FRONTEND
+        value: "true"
+
+      # Banco MySQL externo (ex.: Aiven) — preencher no painel do Render.
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        sync: false
+      - key: MYSQL_DATABASE
+        sync: false
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_SSL
+        value: "true"
+      - key: MYSQL_SSL_CA
+        sync: false
+
+      # E-mail pela API do Brevo.
+      - key: EMAIL_PROVIDER
+        value: brevo_api
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: Sistema Cadastral CODEGO
+      - key: NOTIFICATION_EMAIL
+        value: atualizacaocadastral@codego.com.br
+
+      # reCAPTCHA: ligar depois de adicionar o domínio .onrender.com na chave.
+      - key: RECAPTCHA_ENABLED
+        value: "false"
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false

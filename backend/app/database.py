@@ -1,3 +1,5 @@
+import os
+import tempfile
 import time
 
 from sqlalchemy import create_engine, text
@@ -6,7 +8,25 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.config import settings
 
-engine = create_engine(settings.database_url, pool_pre_ping=True)
+
+def _argumentos_conexao() -> dict:
+    """
+    Conexão criptografada (SSL) com o MySQL, para bancos gerenciados fora da
+    máquina (ex.: Aiven, que exige SSL). Com MYSQL_SSL_CA (conteúdo do
+    certificado CA em PEM) o certificado do servidor também é verificado.
+    """
+    if not settings.mysql_ssl:
+        return {}
+    ca = settings.mysql_ssl_ca.strip().replace("\\n", "\n")
+    if not ca:
+        return {"ssl": {"check_hostname": False}}
+    caminho_ca = os.path.join(tempfile.gettempdir(), "mysql-ca.pem")
+    with open(caminho_ca, "w", encoding="utf-8") as f:
+        f.write(ca + "\n")
+    return {"ssl": {"ca": caminho_ca}}
+
+
+engine = create_engine(settings.database_url, pool_pre_ping=True, pool_recycle=280, connect_args=_argumentos_conexao())
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

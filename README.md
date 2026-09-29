@@ -115,6 +115,10 @@ O caminho recomendado é a VM Windows da CODEGO, com site e API no mesmo
 endereço e https automático pelo Caddy. Passo a passo completo, incluindo o
 pedido ao TI, backup e atualização: **[deploy/README.md](deploy/README.md)**.
 
+Alternativa gratuita: **Render** (site + API) com banco MySQL no Aiven e
+e-mail pela API do Brevo — ver **[deploy/RENDER.md](deploy/RENDER.md)** e o
+`render.yaml` na raiz, incluindo as limitações do plano grátis.
+
 O endereço da API usado pelas páginas fica em `frontend/js/config.js`:
 em desenvolvimento (site na porta 8080) é `http://<máquina>:8000`; publicado
 junto com a API (VM), é o próprio endereço do site.

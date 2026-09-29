@@ -1,8 +1,8 @@
 import re
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
-from app.schemas.validacoes import formatar_numero_br, mes_atual, numero_br
+from app.schemas.validacoes import formatar_numero_br, mes_atual, numero_br, regerando_pdf
 
 # Serviços que já aparecem no modelo do cronograma. O front-end usa essa lista
 # como sugestão inicial; o usuário pode remover/adicionar serviços livremente.
@@ -112,8 +112,8 @@ class AnexoVCfoCreate(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def valida_cronograma(self):
-        if self.inicio_obras < mes_atual():
+    def valida_cronograma(self, info: ValidationInfo):
+        if self.inicio_obras < mes_atual() and not regerando_pdf(info):
             raise ValueError("A previsão de início das obras não pode ser um mês que já passou.")
         meses = total_meses(self.inicio_obras, self.termino_obras)
         if meses < 1:

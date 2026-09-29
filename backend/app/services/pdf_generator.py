@@ -1,5 +1,6 @@
 import base64
 import os
+from contextvars import ContextVar
 from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
@@ -18,6 +19,15 @@ from app.schemas.anexo_ix import AnexoIXCreate
 from app.schemas.anexo_vi_evtf import AnexoVIEvtfCreate
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
+
+# Data impressa nos documentos. Normalmente é o momento da geração; ao recriar
+# um PDF perdido (ver services/regerar_pdf.py), usa a data original do processo.
+data_do_documento: ContextVar[datetime | None] = ContextVar("data_do_documento", default=None)
+
+
+def _agora() -> datetime:
+    return data_do_documento.get() or datetime.now()
+
 _env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
 
@@ -112,7 +122,7 @@ def gerar_pdf_anexo_viii_d(dados: AnexoViiiDCreate, protocolo: str) -> str:
         endereco=dados.endereco,
         telefone=_formatar_telefone(dados.telefone),
         email=dados.email,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         representante_nome=dados.representante_nome,
         representante_estado_civil=dados.representante_estado_civil,
         representante_rg=dados.representante_rg,
@@ -148,7 +158,7 @@ def gerar_pdf_anexo_viii_a(dados: AnexoViiiACreate, protocolo: str) -> str:
         endereco=dados.endereco,
         telefone=_formatar_telefone(dados.telefone),
         email=dados.email,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         representante_nome=dados.representante_nome,
         representante_estado_civil=dados.representante_estado_civil,
         representante_rg=dados.representante_rg,
@@ -207,7 +217,7 @@ def gerar_pdf_anexo_iii(dados: AnexoIiiCreate, protocolo: str) -> str:
         representante_endereco_correspondencia=dados.representante_endereco_correspondencia,
         cnaes=cnaes,
         documentos=documentos,
-        cidade_data=f"Goiânia, {_data_por_extenso(datetime.now())}.",
+        cidade_data=f"Goiânia, {_data_por_extenso(_agora())}.",
     )
 
     os.makedirs(settings.upload_dir, exist_ok=True)
@@ -244,7 +254,7 @@ def gerar_pdf_anexo_v_declaracao_uso(dados: AnexoVDeclaracaoUsoCreate, protocolo
         endereco=dados.endereco,
         telefone=_formatar_telefone(dados.telefone),
         email=dados.email,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         representante_nome=dados.representante_nome,
         representante_estado_civil=dados.representante_estado_civil,
         representante_rg=dados.representante_rg,
@@ -388,7 +398,7 @@ def gerar_pdf_anexo_vii_mce(dados: AnexoViiMceCreate, protocolo: str) -> str:
         protocolo=protocolo,
         secoes=secoes,
         local=dados.local_cidade_uf,
-        data=_data_por_extenso(datetime.now()),
+        data=_data_por_extenso(_agora()),
         responsavel_nome=dados.responsavel_nome,
         responsavel_cargo=dados.responsavel_cargo,
         razao_social=dados.razao_social,
@@ -421,7 +431,7 @@ def gerar_pdf_anexo_viii_b(dados: AnexoViiiBCreate, protocolo: str) -> str:
         endereco=dados.endereco,
         telefone=_formatar_telefone(dados.telefone),
         email=dados.email,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         representante_nome=dados.representante_nome,
         representante_estado_civil=dados.representante_estado_civil,
         representante_rg=dados.representante_rg,
@@ -463,7 +473,7 @@ def gerar_pdf_anexo_viii_c(dados: AnexoViiiCCreate, protocolo: str) -> str:
         endereco=dados.endereco,
         telefone=_formatar_telefone(dados.telefone),
         email=dados.email,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         representante_nome=dados.representante_nome,
         representante_estado_civil=dados.representante_estado_civil,
         representante_rg=dados.representante_rg,
@@ -494,7 +504,7 @@ def gerar_pdf_anexo_ix(dados: AnexoIXCreate, protocolo: str) -> str:
     html_renderizado = template.render(
         brasao_data_uri=_BRASAO_DATA_URI,
         protocolo=protocolo,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         tecnico_responsavel=dados.tecnico_responsavel,
         nome_empresarial=dados.nome_empresarial,
         cnpj=_formatar_cnpj(dados.cnpj),
@@ -572,7 +582,7 @@ def gerar_pdf_anexo_vi_evtf(dados: AnexoVIEvtfCreate, protocolo: str) -> str:
     html_renderizado = template.render(
         brasao_data_uri=_BRASAO_DATA_URI,
         protocolo=protocolo,
-        cidade_data=datetime.now().strftime("Goiânia, %d/%m/%Y"),
+        cidade_data=_agora().strftime("Goiânia, %d/%m/%Y"),
         razao_social=dados.razao_social,
         cnpj=_formatar_cnpj(dados.cnpj),
         endereco=dados.endereco,

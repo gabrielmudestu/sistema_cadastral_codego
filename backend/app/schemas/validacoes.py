@@ -67,3 +67,13 @@ def formatar_numero_br(valor: float) -> str:
 
 def mes_atual() -> str:
     return date.today().strftime("%Y-%m")
+
+
+def regerando_pdf(info) -> bool:
+    """
+    Se a validação é da recriação do PDF de um processo já existente (ver
+    services/regerar_pdf.py). Nesse caso as regras que dependem da data de hoje
+    (ex.: "não pode ser um mês que já passou") não se aplicam: valiam no dia
+    em que o formulário foi preenchido.
+    """
+    return bool(info is not None and info.context and info.context.get("regerar_pdf"))

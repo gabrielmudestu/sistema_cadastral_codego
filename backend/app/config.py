@@ -7,6 +7,14 @@ class Settings(BaseSettings):
     mysql_database: str = "sistema_cadastral_codego"
     mysql_user: str = "codego_app"
     mysql_password: str = "change_me"
+    # Banco gerenciado fora da máquina (ex.: Aiven no Render): conexão com SSL.
+    mysql_ssl: bool = False
+    mysql_ssl_ca: str = ""  # conteúdo do certificado CA (PEM); se vazio, criptografa sem verificar o certificado
+
+    # Serve o site (pasta frontend/, copiada para a imagem) pelo próprio backend,
+    # no mesmo endereço da API — usado no Render, onde há um serviço só.
+    servir_frontend: bool = False
+    frontend_dir: str = "/app/frontend"
 
     app_env: str = "development"
     app_secret_key: str = "change_me_secret"

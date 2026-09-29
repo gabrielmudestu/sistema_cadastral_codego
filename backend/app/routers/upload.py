@@ -9,6 +9,7 @@ from app.database import get_db
 from app.config import settings
 from app.models.orm import DocumentoProcesso, ProcessoDocumento, StatusProcesso
 from app.services.documentos_processo import documentos_exigidos
+from app.services.regerar_pdf import regerar_pdf_preenchido
 from app.services.validacao_arquivos import validar_anexo, validar_documento_assinado, salvar_arquivo
 from app.services.email_service import enviar_email_documento_assinado
 from app.services.recaptcha import verificar_recaptcha
@@ -23,7 +24,14 @@ def baixar_pdf_preenchido(processo_id: int, db: Session = Depends(get_db)):
     if processo is None or not processo.caminho_pdf_preenchido:
         raise HTTPException(status_code=404, detail="PDF não encontrado para este processo.")
     if not os.path.exists(processo.caminho_pdf_preenchido):
-        raise HTTPException(status_code=404, detail="Arquivo do PDF não está mais disponível no servidor.")
+        # O arquivo pode ter sido apagado (ex.: Render grátis, que limpa o disco
+        # a cada reinício): recria a partir dos dados salvos no banco.
+        caminho = regerar_pdf_preenchido(processo)
+        if not caminho:
+            raise HTTPException(status_code=404, detail="Arquivo do PDF não está mais disponível no servidor.")
+        if caminho != processo.caminho_pdf_preenchido:
+            processo.caminho_pdf_preenchido = caminho
+            db.commit()
 
     return FileResponse(
         processo.caminho_pdf_preenchido,
